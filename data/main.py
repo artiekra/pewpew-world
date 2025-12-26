@@ -10,6 +10,19 @@ from loguru import logger
 # Add the current directory to the path so we can import modules
 sys.path.append(os.path.dirname(__file__))
 
+data_dir = os.path.dirname(__file__)
+
+# Configure logger to write to logs directory
+logs_dir = os.path.join(data_dir, "logs")
+os.makedirs(logs_dir, exist_ok=True)
+
+logger.add(
+    os.path.join(logs_dir, "app_{time}.log"),
+    level="SUCCESS",
+    rotation="30 MB",
+    retention="3 months",
+)
+
 
 def run_module(module_name):
     """
@@ -27,7 +40,6 @@ def run_module(module_name):
 
 
 # Load modules configuration from modules.json
-data_dir = os.path.dirname(__file__)
 modules_json_path = os.path.join(data_dir, "modules.json")
 
 try:
