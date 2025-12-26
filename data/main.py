@@ -32,7 +32,7 @@ def run_module(module_name):
         mod = importlib.import_module(module_name)
         if hasattr(mod, "run"):
             mod.run()
-            logger.success(f"Successfully ran module: {module_name}")
+            logger.info(f"Successfully ran module: {module_name}")
         else:
             logger.error(f"Module {module_name} does not have a 'run' function.")
     except Exception as e:

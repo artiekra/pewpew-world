@@ -2,5 +2,9 @@
     {
         "module": "modules.github_data",
         "cron": "* * * * *"
+    },
+    {
+        "module": "modules.monthly_lb_monthly",
+        "cron": "* * * * *"
     }
 ]

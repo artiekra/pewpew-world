@@ -36,4 +36,4 @@ def run():
     with open(metadata_path, "w") as f:
         json.dump(metadata, f, indent=2)
 
-    logger.info("GitHub data download completed.")
+    logger.success("GitHub data download completed.")
