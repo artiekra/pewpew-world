@@ -1,6 +1,6 @@
 [
     {
-        "module": "modules.monthly_leaderboard",
+        "module": "modules.github_data",
         "cron": "* * * * *"
     }
 ]
