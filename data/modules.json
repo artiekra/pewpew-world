@@ -5,6 +5,10 @@
     },
     {
         "module": "modules.monthly_lb_monthly",
+        "cron": "1 1 1 1 1"
+    },
+    {
+        "module": "modules.monthly_lb_daily",
         "cron": "* * * * *"
     }
 ]
