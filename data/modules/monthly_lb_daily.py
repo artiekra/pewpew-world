@@ -1,5 +1,6 @@
 import csv
 import os
+from collections import defaultdict
 
 from loguru import logger
 
@@ -13,84 +14,129 @@ def run():
     logger.info("Daily leaderboard processing started.")
 
     try:
+        # 1. Load the list of relevant Level UUIDs
         with open(levels_path, "r") as f:
-            selected_levels = []
+            selected_levels = set()  # Use set for O(1) lookup
             for line in f:
                 level_uuid = line.strip()
                 if level_uuid:
-                    selected_levels.append(level_uuid)
+                    selected_levels.add(level_uuid)
 
-        score_data = []
+        # 2. Load Score Data & Determine Max Version per Level
+        raw_scores = []
+        level_max_versions = defaultdict(int)
+
         with open(score_data_path, "r") as f:
             reader = csv.DictReader(f)
             for row in reader:
+                # Only process if it's a selected level
                 if row["level_uuid"] in selected_levels:
-                    score_data.append(row)
 
+                    # FILTER 1: Only allow Standard Mode (Type 0)
+                    # C++: if (base_score.type) speedrun... else scores...
+                    if int(row.get("type", 0)) != 0:
+                        continue
+
+                    # Track max version logic
+                    ver = int(row.get("level_version", 0))
+                    lvl_uuid = row["level_uuid"]
+                    if ver > level_max_versions[lvl_uuid]:
+                        level_max_versions[lvl_uuid] = ver
+
+                    raw_scores.append(row)
+
+        # 3. Filter Scores by Version
+        # C++: if (base_score.level_version < level_versions[base_score.level_id]) continue;
+        valid_scores = []
+        for row in raw_scores:
+            lvl_uuid = row["level_uuid"]
+            ver = int(row.get("level_version", 0))
+
+            if ver >= level_max_versions[lvl_uuid]:
+                valid_scores.append(row)
+
+        # 4. Create Level Leaderboards
         level_leaderboards = {}
         for level_uuid in selected_levels:
-            level_scores = [s for s in score_data if s["level_uuid"] == level_uuid]
-            level_scores.sort(key=lambda x: (-int(x["value"]), int(x["date"])))
-            top_25 = level_scores[:25]
-            level_leaderboards[level_uuid] = top_25
+            # Get scores for this level
+            level_specific_scores = [
+                s for s in valid_scores if s["level_uuid"] == level_uuid
+            ]
 
+            # Sort: High Score first, then Oldest Date wins ties
+            # C++: a.value > b.value ? ... : a.timestamp < b.timestamp
+            level_specific_scores.sort(key=lambda x: (-int(x["value"]), int(x["date"])))
+
+            # Take top 25
+            level_leaderboards[level_uuid] = level_specific_scores[:25]
+
+        # 5. Calculate Points
         position_scores = {}
-        for i in range(1, 5):
-            position_scores[i] = 2500 - (i - 1) * 250
-        for i in range(5, 11):
-            position_scores[i] = 1625 - (i - 5) * 125
-        for i in range(11, 26):
-            position_scores[i] = 950 - (i - 11) * 50
+        for rank in range(1, 26):
+            idx = rank - 1
 
-        player_scores = {}
+            if rank <= 3:
+                position_scores[rank] = 2500 - idx * 250
+            elif rank <= 10:
+                position_scores[rank] = 2125 - idx * 125
+            else:
+                position_scores[rank] = 1450 - idx * 50
+
+        player_scores = defaultdict(int)
         player_data = {}
 
         for level_uuid, top_25 in level_leaderboards.items():
             for position, score_entry in enumerate(top_25, start=1):
                 account_id = score_entry["account_ids"]
-                score = position_scores[position]
+                points = position_scores[position]
 
-                if account_id not in player_scores:
-                    player_scores[account_id] = 0
+                player_scores[account_id] += points
+
+                if account_id not in player_data:
                     player_data[account_id] = {
                         "country": score_entry["country"],
                         "wrs": 0,
                         "places": [],
                     }
 
-                player_scores[account_id] += score
                 player_data[account_id]["places"].append(position)
-
                 if position == 1:
                     player_data[account_id]["wrs"] += 1
 
+        # 6. Format Output
         final_leaderboard = []
-        for account_id in player_scores:
-            player_info = player_data[account_id]
-            avg_place = sum(player_info["places"]) / len(player_info["places"])
+        for account_id, total_score in player_scores.items():
+            info = player_data[account_id]
+            avg_place = sum(info["places"]) / len(info["places"])
+
             final_leaderboard.append(
                 {
                     "player_uuid": account_id,
-                    "country": player_info["country"],
-                    "score": player_scores[account_id],
-                    "wrs": player_info["wrs"],
+                    "country": info["country"],
+                    "score": total_score,
+                    "wrs": info["wrs"],
                     "average_place": round(avg_place, 4),
                 }
             )
 
         final_leaderboard.sort(key=lambda x: -x["score"])
 
+        # Write to CSV
         os.makedirs(os.path.dirname(output_path), exist_ok=True)
-        with open(output_path, "w", newline="") as f:
+        with open(output_path, "w", newline="", encoding="utf-8") as f:
             fieldnames = ["player_uuid", "country", "score", "wrs", "average_place"]
             writer = csv.DictWriter(f, fieldnames=fieldnames)
             writer.writeheader()
             writer.writerows(final_leaderboard)
 
         logger.success(f"Processed {len(final_leaderboard)} players")
-    except FileNotFoundError as e:
-        logger.error(f"File not found: {e}")
+
     except Exception as e:
         logger.error(f"Error: {e}")
+        raise e
 
     logger.info("Daily leaderboard processing completed.")
+
+
+if __name__ == "__main__":
+    run()
