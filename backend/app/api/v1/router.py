@@ -146,6 +146,60 @@ async def get_monthly_leaderboard():
 
 
 @router.get(
+    "/get_monthly_leaderboard/{year}/{month}",
+    summary="Get archived monthly leaderboard",
+    description="Retrieves the archived monthly leaderboard for a specific month with the latest stored state",
+    tags=["monthly leaderboard"],
+    response_model=MonthlyLeaderboardResponse,
+)
+async def get_archived_monthly_leaderboard(year: int, month: int):
+    base_path = Path(__file__).parent.parent.parent.parent.parent / "data/data"
+    archive_path = (
+        base_path / f"monthly_lb_daily/archive/monthly_lb_{month}_{year}.json"
+    )
+    levels_archive_path = base_path / "monthly_lb_monthly/levels_archive.json"
+
+    if not archive_path.exists():
+        raise HTTPException(
+            status_code=404,
+            detail=f"No monthly leaderboard archive found for {month}/{year}",
+        )
+
+    with open(archive_path, "r") as f:
+        archive = json.load(f)
+
+    if not archive:
+        raise HTTPException(status_code=404, detail=f"Archive is empty")
+
+    latest_entry = max(archive, key=lambda x: x.get("timestamp", 0))
+
+    leaderboard = []
+    for entry in latest_entry.get("data", []):
+        leaderboard.append(
+            LeaderboardEntry(
+                player_uuid=entry["player_uuid"],
+                country=entry["country"],
+                score=int(entry["score"]),
+                wrs=int(entry["wrs"]),
+                average_place=float(entry["average_place"]),
+            )
+        )
+
+    levels = []
+    timestamp = latest_entry.get("timestamp", 0.0)
+
+    if levels_archive_path.exists():
+        with open(levels_archive_path, "r") as f:
+            levels_archive = json.load(f)
+            closest_levels_entry = find_closest_timestamp(levels_archive, timestamp)
+            levels = closest_levels_entry.get("levels", [])
+
+    return MonthlyLeaderboardResponse(
+        timestamp=timestamp, levels=levels, leaderboard=leaderboard
+    )
+
+
+@router.get(
     "/get_monthly_leaderboard_levels/{year}/{month}",
     summary="Get monthly leaderboard levels by year and month",
     description="Retrieves the levels for a specific month from the levels archive",
