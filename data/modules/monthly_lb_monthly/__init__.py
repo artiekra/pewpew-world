@@ -2,6 +2,7 @@ import csv
 import json
 import os
 import random
+from datetime import datetime
 
 from loguru import logger
 
@@ -77,6 +78,22 @@ def run():
         with open(output_path, "w") as f:
             for level_uuid in selected_levels:
                 f.write(level_uuid + "\n")
+
+        archive_path = os.path.join(output_dir, "levels_archive.json")
+        existing_entries = []
+        if os.path.exists(archive_path):
+            with open(archive_path, "r") as f:
+                existing_entries = json.load(f)
+
+        timestamp = datetime.now().timestamp()
+
+        existing_entries.append({
+            "timestamp": timestamp,
+            "levels": selected_levels
+        })
+
+        with open(archive_path, "w") as f:
+            json.dump(existing_entries, f, indent=2)
 
         logger.success(f"Selected {len(selected_levels)} levels: {selected_levels}")
     except FileNotFoundError as e:
