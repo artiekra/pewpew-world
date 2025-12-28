@@ -1,9 +1,10 @@
 import csv
 import json
+from datetime import datetime
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
 router = APIRouter()
@@ -21,6 +22,13 @@ class MonthlyLeaderboardResponse(BaseModel):
     timestamp: float
     levels: List[str]
     leaderboard: List[LeaderboardEntry]
+
+
+class MonthlyLevelsResponse(BaseModel):
+    year: int
+    month: int
+    timestamp: float
+    levels: List[str]
 
 
 @router.get(
@@ -87,3 +95,37 @@ async def get_monthly_leaderboard():
     return MonthlyLeaderboardResponse(
         timestamp=timestamp, levels=levels, leaderboard=leaderboard
     )
+
+
+@router.get(
+    "/get_monthly_leaderboard_levels/{year}/{month}",
+    summary="Get monthly leaderboard levels by year and month",
+    description="Retrieves the levels for a specific month from the levels archive",
+    tags=["monthly leaderboard"],
+    response_model=MonthlyLevelsResponse,
+)
+async def get_monthly_leaderboard_levels(year: int, month: int):
+    base_path = Path(__file__).parent.parent.parent.parent.parent / "data/data"
+    archive_path = base_path / "monthly_lb_monthly/levels_archive.json"
+
+    with open(archive_path, "r") as f:
+        archive = json.load(f)
+
+    month_start = datetime(year, month, 1).timestamp()
+
+    if month == 12:
+        month_end = datetime(year + 1, 1, 1).timestamp()
+    else:
+        month_end = datetime(year, month + 1, 1).timestamp()
+
+    for entry in archive:
+        timestamp = entry.get("timestamp", 0)
+        if month_start <= timestamp < month_end:
+            return MonthlyLevelsResponse(
+                year=year,
+                month=month,
+                timestamp=timestamp,
+                levels=entry.get("levels", []),
+            )
+
+    raise HTTPException(status_code=404, detail=f"No levels found for {year}/{month}")
