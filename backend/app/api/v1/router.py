@@ -112,6 +112,16 @@ class PlayerLeaderboardPlacementsResponse(BaseModel):
     blitz_leaderboard: LeaderboardPlacement
 
 
+class UsernameChange(BaseModel):
+    timestamp: float
+    new_name: str
+
+
+class UsernameChangeHistoryResponse(BaseModel):
+    player_uuid: str
+    changes: List[UsernameChange]
+
+
 @router.get(
     "/",
     summary="Root endpoint",
@@ -445,9 +455,13 @@ async def get_player_blitz_history(uuid: str, sample_rate: int = 1):
 async def get_player_leaderboard_placements(uuid: str):
     base_path = Path(__file__).parent.parent.parent.parent.parent / "data/data"
 
-    monthly_placement = LeaderboardPlacement(timestamp=0.0, placement=None, not_found=True)
+    monthly_placement = LeaderboardPlacement(
+        timestamp=0.0, placement=None, not_found=True
+    )
     xp_placement = LeaderboardPlacement(timestamp=0.0, placement=None, not_found=True)
-    blitz_placement = LeaderboardPlacement(timestamp=0.0, placement=None, not_found=True)
+    blitz_placement = LeaderboardPlacement(
+        timestamp=0.0, placement=None, not_found=True
+    )
 
     leaderboard_path = base_path / "monthly_lb_daily/leaderboard.csv"
     metadata_path = base_path / "github_data/metadata.json"
@@ -503,3 +517,45 @@ async def get_player_leaderboard_placements(uuid: str):
         xp_leaderboard=xp_placement,
         blitz_leaderboard=blitz_placement,
     )
+
+
+@router.get(
+    "/player/{uuid}/get_username_change_history",
+    summary="Get player username change history",
+    description="Retrieves history of username changes for a specific player",
+    tags=["player"],
+    response_model=UsernameChangeHistoryResponse,
+)
+async def get_username_change_history(uuid: str):
+    base_path = Path(__file__).parent.parent.parent.parent.parent / "data/data"
+    xp_archive_dir = base_path / "xp_lb_archive"
+
+    all_entries = []
+
+    for archive_file in sorted(xp_archive_dir.glob("xp_lb_*.json")):
+        with open(archive_file, "r") as f:
+            archive = json.load(f)
+
+        for entry in archive:
+            timestamp = entry.get("timestamp", 0)
+            for player in entry.get("data", []):
+                if player.get("acc") == uuid:
+                    all_entries.append(
+                        {"timestamp": timestamp, "name": player.get("name", "")}
+                    )
+                    break
+
+    all_entries.sort(key=lambda x: x["timestamp"])
+
+    changes = []
+    previous_name = None
+
+    for entry in all_entries:
+        current_name = entry["name"]
+        if previous_name is None or current_name != previous_name:
+            changes.append(
+                UsernameChange(timestamp=entry["timestamp"], new_name=current_name)
+            )
+            previous_name = current_name
+
+    return UsernameChangeHistoryResponse(player_uuid=uuid, changes=changes)
