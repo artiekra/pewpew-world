@@ -2,7 +2,7 @@ import csv
 import json
 from datetime import datetime
 from pathlib import Path
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
@@ -29,6 +29,54 @@ class MonthlyLevelsResponse(BaseModel):
     month: int
     timestamp: float
     levels: List[str]
+
+
+class XPLeaderboardEntry(BaseModel):
+    acc: str
+    name: str
+    xp: int
+
+
+class XPLeaderboardResponse(BaseModel):
+    timestamp: float
+    data: List[XPLeaderboardEntry]
+
+
+class BlitzLeaderboardEntry(BaseModel):
+    acc: str
+    name: str
+    bsr: int
+
+
+class BlitzLeaderboardResponse(BaseModel):
+    timestamp: float
+    data: List[BlitzLeaderboardEntry]
+
+
+class QuestLevel(BaseModel):
+    uuid: str
+    version: int
+    name: str
+
+
+class Quest(BaseModel):
+    kind: int
+    goal: int
+    levels: List[QuestLevel]
+    xp: int
+    enemy: Optional[str] = None
+
+
+class QuestData(BaseModel):
+    version: int
+    expiration: int
+    quests_id: int
+    quests: List[Quest]
+
+
+class QuestResponse(BaseModel):
+    timestamp: float
+    data: QuestData
 
 
 @router.get(
@@ -129,3 +177,96 @@ async def get_monthly_leaderboard_levels(year: int, month: int):
             )
 
     raise HTTPException(status_code=404, detail=f"No levels found for {year}/{month}")
+
+
+def find_closest_timestamp(
+    archive: List[Dict[str, Any]], target_timestamp: float
+) -> Dict[str, Any]:
+    closest_entry = min(
+        archive, key=lambda x: abs(x.get("timestamp", 0) - target_timestamp)
+    )
+    return closest_entry
+
+
+@router.get(
+    "/archive/xp_leaderboard/{timestamp}",
+    summary="Get archived XP leaderboard by timestamp",
+    description="Retrieves the XP leaderboard entry closest to the given timestamp",
+    tags=["archive"],
+    response_model=XPLeaderboardResponse,
+)
+async def get_archived_xp_leaderboard(timestamp: float):
+    dt = datetime.fromtimestamp(timestamp)
+    base_path = Path(__file__).parent.parent.parent.parent.parent / "data/data"
+    archive_path = base_path / f"xp_lb_archive/xp_lb_{dt.month}_{dt.year}.json"
+
+    with open(archive_path, "r") as f:
+        archive = json.load(f)
+
+    closest_entry = find_closest_timestamp(archive, timestamp)
+
+    return XPLeaderboardResponse(
+        timestamp=closest_entry["timestamp"], data=closest_entry["data"]
+    )
+
+
+@router.get(
+    "/archive/blitz_leaderboard/{timestamp}",
+    summary="Get archived Blitz leaderboard by timestamp",
+    description="Retrieves the Blitz leaderboard entry closest to the given timestamp",
+    tags=["archive"],
+    response_model=BlitzLeaderboardResponse,
+)
+async def get_archived_blitz_leaderboard(timestamp: float):
+    dt = datetime.fromtimestamp(timestamp)
+    base_path = Path(__file__).parent.parent.parent.parent.parent / "data/data"
+    archive_path = base_path / f"blitz_lb_archive/blitz_lb_{dt.month}_{dt.year}.json"
+
+    with open(archive_path, "r") as f:
+        archive = json.load(f)
+
+    closest_entry = find_closest_timestamp(archive, timestamp)
+
+    return BlitzLeaderboardResponse(
+        timestamp=closest_entry["timestamp"], data=closest_entry["data"]
+    )
+
+
+@router.get(
+    "/archive/quests/{year}/{month}/{day}",
+    summary="Get archived quests by date",
+    description="Retrieves the quests entry for a specific date",
+    tags=["archive"],
+    response_model=QuestResponse,
+)
+async def get_archived_quests(year: int, month: int, day: int):
+    base_path = Path(__file__).parent.parent.parent.parent.parent / "data/data"
+    archive_path = base_path / f"quests_archive/quests_{month}_{year}.json"
+
+    if not archive_path.exists():
+        raise HTTPException(
+            status_code=404, detail=f"No quests archive found for {month}/{year}"
+        )
+
+    with open(archive_path, "r") as f:
+        archive = json.load(f)
+
+    day_start = datetime(year, month, day).timestamp()
+    day_end = (
+        datetime(year, month, day + 1).timestamp()
+        if day < 31
+        else (
+            datetime(year, month + 1, 1).timestamp()
+            if month < 12
+            else datetime(year + 1, 1, 1).timestamp()
+        )
+    )
+
+    for entry in archive:
+        entry_timestamp = entry.get("timestamp", 0)
+        if day_start <= entry_timestamp < day_end:
+            return QuestResponse(timestamp=entry_timestamp, data=entry["data"])
+
+    raise HTTPException(
+        status_code=404, detail=f"No quests found for {year}/{month}/{day}"
+    )
