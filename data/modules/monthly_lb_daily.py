@@ -1,6 +1,8 @@
 import csv
+import json
 import os
 from collections import defaultdict
+from datetime import datetime
 
 from loguru import logger
 
@@ -14,7 +16,7 @@ def run():
     logger.info("Daily leaderboard processing started.")
 
     try:
-        # 1. Load the list of relevant Level UUIDs
+        # Load the list of relevant Level UUIDs
         with open(levels_path, "r") as f:
             selected_levels = set()  # Use set for O(1) lookup
             for line in f:
@@ -22,7 +24,7 @@ def run():
                 if level_uuid:
                     selected_levels.add(level_uuid)
 
-        # 2. Load Score Data & Determine Max Version per Level
+        # Load Score Data & Determine Max Version per Level
         raw_scores = []
         level_max_versions = defaultdict(int)
 
@@ -32,8 +34,7 @@ def run():
                 # Only process if it's a selected level
                 if row["level_uuid"] in selected_levels:
 
-                    # FILTER 1: Only allow Standard Mode (Type 0)
-                    # C++: if (base_score.type) speedrun... else scores...
+                    # Only allow Standard Mode (Type 0)
                     if int(row.get("type", 0)) != 0:
                         continue
 
@@ -45,8 +46,7 @@ def run():
 
                     raw_scores.append(row)
 
-        # 3. Filter Scores by Version
-        # C++: if (base_score.level_version < level_versions[base_score.level_id]) continue;
+        # Filter Scores by Version
         valid_scores = []
         for row in raw_scores:
             lvl_uuid = row["level_uuid"]
@@ -55,7 +55,7 @@ def run():
             if ver >= level_max_versions[lvl_uuid]:
                 valid_scores.append(row)
 
-        # 4. Create Level Leaderboards
+        # Create Level Leaderboards
         level_leaderboards = {}
         for level_uuid in selected_levels:
             # Get scores for this level
@@ -64,13 +64,12 @@ def run():
             ]
 
             # Sort: High Score first, then Oldest Date wins ties
-            # C++: a.value > b.value ? ... : a.timestamp < b.timestamp
             level_specific_scores.sort(key=lambda x: (-int(x["value"]), int(x["date"])))
 
             # Take top 25
             level_leaderboards[level_uuid] = level_specific_scores[:25]
 
-        # 5. Calculate Points
+        # Calculate Points
         position_scores = {}
         for rank in range(1, 26):
             idx = rank - 1
@@ -103,7 +102,7 @@ def run():
                 if position == 1:
                     player_data[account_id]["wrs"] += 1
 
-        # 6. Format Output
+        # Format Output
         final_leaderboard = []
         for account_id, total_score in player_scores.items():
             info = player_data[account_id]
@@ -128,6 +127,29 @@ def run():
             writer = csv.DictWriter(f, fieldnames=fieldnames)
             writer.writeheader()
             writer.writerows(final_leaderboard)
+
+        # Archive to monthly file with timestamp (JSON format like quests/xp archives)
+        now = datetime.now()
+        archive_dir = os.path.join(os.path.dirname(output_path), "archive")
+        archive_path = os.path.join(
+            archive_dir, f"monthly_lb_{now.month}_{now.year}.json"
+        )
+        timestamp = now.timestamp()
+
+        os.makedirs(archive_dir, exist_ok=True)
+
+        existing_entries = []
+        if os.path.exists(archive_path):
+            with open(archive_path, "r") as f:
+                existing_entries = json.load(f)
+
+        existing_entries.append({
+            "timestamp": timestamp,
+            "data": final_leaderboard
+        })
+
+        with open(archive_path, "w") as f:
+            json.dump(existing_entries, f, indent=2)
 
         logger.success(f"Processed {len(final_leaderboard)} players")
 
