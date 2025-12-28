@@ -18,5 +18,9 @@
     {
         "module": "modules.xp_lb_archive",
         "cron": "* * * * *"
+    },
+    {
+        "module": "modules.blitz_lb_archive",
+        "cron": "* * * * *"
     }
 ]
