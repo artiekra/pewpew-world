@@ -1,26 +1,26 @@
 [
     {
         "module": "modules.github_data",
-        "cron": "* * * * *"
+        "cron": "0 2 * * *"
     },
     {
         "module": "modules.monthly_lb_monthly",
-        "cron": "* * * * *"
+        "cron": "0 1 1 * *"
     },
     {
         "module": "modules.monthly_lb_daily",
-        "cron": "* * * * *"
+        "cron": "30 2 * * *"
     },
     {
         "module": "modules.quests_archive",
-        "cron": "* * * * *"
+        "cron": "10 0 * * *"
     },
     {
         "module": "modules.xp_lb_archive",
-        "cron": "* * * * *"
+        "cron": "0 * * * *"
     },
     {
         "module": "modules.blitz_lb_archive",
-        "cron": "* * * * *"
+        "cron": "0 * * * *"
     }
 ]
