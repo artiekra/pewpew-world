@@ -10,6 +10,10 @@
   --tblr-bg-surface-dark: #000000;
   --tblr-bg-surface-secondary: #121212;
   --tblr-table-striped-bg: rgba(255, 255, 255, 0.05);
+
+  --tblr-bg-forms: #000000;
+
+  --tblr-border-color-input: #2c2c2c;
 }
 
 [data-bs-theme="light"] {
@@ -24,6 +28,10 @@
   --tblr-bg-surface-dark: #f3f4f6;
   --tblr-bg-surface-secondary: #f8f8f8;
   --tblr-table-striped-bg: rgba(0, 0, 0, 0.03);
+
+  --tblr-bg-forms: #ffffff;
+
+  --tblr-border-color-input: #e5e7eb;
 }
 
 [data-bs-theme="dark"] .table thead th,
