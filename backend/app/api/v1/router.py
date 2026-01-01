@@ -13,6 +13,7 @@ router = APIRouter()
 
 class LeaderboardEntry(BaseModel):
     player_uuid: str
+    player_name: str
     country: str
     score: int
     wrs: int
@@ -181,18 +182,28 @@ async def get_monthly_leaderboard():
     levels_path = base_path / "monthly_lb_monthly/levels.txt"
     metadata_path = base_path / "github_data/metadata.json"
     level_data_path = base_path / "github_data/level_data.csv"
+    account_data_path = base_path / "github_data/account_data.csv"
 
     leaderboard = []
     levels = []
     timestamp = 0.0
 
+    player_name_map = {}
+    if account_data_path.exists():
+        with open(account_data_path, "r") as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                player_name_map[row["account_id"]] = row["username"]
+
     if leaderboard_path.exists():
         with open(leaderboard_path, "r") as f:
             reader = csv.DictReader(f)
             for row in reader:
+                player_uuid = row["player_uuid"]
                 leaderboard.append(
                     LeaderboardEntry(
-                        player_uuid=row["player_uuid"],
+                        player_uuid=player_uuid,
+                        player_name=player_name_map.get(player_uuid, player_uuid),
                         country=row["country"],
                         score=int(row["score"]),
                         wrs=int(row["wrs"]),
@@ -240,6 +251,7 @@ async def get_archived_monthly_leaderboard(year: int, month: int):
     )
     levels_archive_path = base_path / "monthly_lb_monthly/levels_archive.json"
     level_data_path = base_path / "github_data/level_data.csv"
+    account_data_path = base_path / "github_data/account_data.csv"
 
     if not archive_path.exists():
         raise HTTPException(
@@ -255,11 +267,20 @@ async def get_archived_monthly_leaderboard(year: int, month: int):
 
     latest_entry = max(archive, key=lambda x: x.get("timestamp", 0))
 
+    player_name_map = {}
+    if account_data_path.exists():
+        with open(account_data_path, "r") as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                player_name_map[row["account_id"]] = row["username"]
+
     leaderboard = []
     for entry in latest_entry.get("data", []):
+        player_uuid = entry["player_uuid"]
         leaderboard.append(
             LeaderboardEntry(
-                player_uuid=entry["player_uuid"],
+                player_uuid=player_uuid,
+                player_name=player_name_map.get(player_uuid, player_uuid),
                 country=entry["country"],
                 score=int(entry["score"]),
                 wrs=int(entry["wrs"]),

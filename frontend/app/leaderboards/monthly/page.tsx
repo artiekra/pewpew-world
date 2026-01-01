@@ -10,6 +10,7 @@ import api from "@/lib/api";
 
 interface LeaderboardEntry {
   player_uuid: string;
+  player_name: string;
   country: string;
   score: number;
   wrs: number;
@@ -29,13 +30,9 @@ interface MonthlyResponse {
 
 const columns: ColumnDef<LeaderboardEntry>[] = [
   {
-    accessorKey: "player_uuid",
+    accessorKey: "player_name",
     header: "Player",
-    cell: (info) => (
-      <p className="text-muted mb-0">
-        {(info.getValue() as string).substring(0, 8)}...
-      </p>
-    ),
+    cell: (info) => <ColorizedText text={info.getValue() as string} />,
   },
   {
     accessorKey: "country",
