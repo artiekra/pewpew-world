@@ -28,18 +28,38 @@ interface MonthlyResponse {
   leaderboard: LeaderboardEntry[];
 }
 
+// Helper to convert ISO 2-letter code to Emoji Flag
+const getFlagEmoji = (countryCode: string) => {
+  if (!countryCode) return "";
+  const codePoints = countryCode
+    .toUpperCase()
+    .split("")
+    .map((char) => 127397 + char.charCodeAt(0));
+  return String.fromCodePoint(...codePoints);
+};
+
 const columns: ColumnDef<LeaderboardEntry>[] = [
   {
     accessorKey: "player_name",
     header: "Player",
-    cell: (info) => <ColorizedText text={info.getValue() as string} />,
-  },
-  {
-    accessorKey: "country",
-    header: "Country",
-    cell: (info) => (
-      <span className="badge bg-blue-lt">{info.getValue() as string}</span>
-    ),
+    cell: ({ row, getValue }) => {
+      const countryCode = row.original.country;
+      const flag = getFlagEmoji(countryCode);
+
+      return (
+        <div className="d-flex align-items-center">
+          <span
+            className="me-2 user-select-none"
+            title={countryCode}
+            style={{ fontSize: "1em" }}
+          >
+            {flag}
+          </span>
+          {/* <span className="badge bg-blue-lt me-2">{countryCode}</span> */}
+          <ColorizedText text={getValue() as string} />
+        </div>
+      );
+    },
   },
   {
     accessorKey: "score",

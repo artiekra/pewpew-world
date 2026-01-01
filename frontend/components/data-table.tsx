@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   useReactTable,
   getCoreRowModel,
@@ -16,6 +16,7 @@ interface DataTableProps<TData> {
   columns: ColumnDef<TData>[];
   title?: string;
   defaultSort?: SortingState;
+  showRowNumbers?: boolean; // New prop
 }
 
 export default function DataTable<TData>({
@@ -23,13 +24,35 @@ export default function DataTable<TData>({
   columns,
   title = "Data Table",
   defaultSort = [],
+  showRowNumbers = true, // Default to true
 }: DataTableProps<TData>) {
   const [sorting, setSorting] = useState<SortingState>(defaultSort);
   const [globalFilter, setGlobalFilter] = useState("");
 
+  useEffect(() => {
+    setSorting(defaultSort);
+  }, [defaultSort]);
+
+  // Dynamically add the row number column if enabled
+  const tableColumns = useMemo(() => {
+    if (!showRowNumbers) return columns;
+
+    const rowNumberColumn: ColumnDef<TData> = {
+      id: "row_number",
+      header: "", // Empty header
+      size: 50, // Small width
+      enableSorting: false, // Prevent sorting by row number
+      cell: ({ row }) => (
+        <span className="text-muted small">{row.index + 1}</span>
+      ),
+    };
+
+    return [rowNumberColumn, ...columns];
+  }, [columns, showRowNumbers]);
+
   const table = useReactTable({
     data,
-    columns,
+    columns: tableColumns, // Use the computed columns
     state: {
       sorting,
       globalFilter,
@@ -204,7 +227,7 @@ export default function DataTable<TData>({
             ) : (
               <tr>
                 <td
-                  colSpan={columns.length}
+                  colSpan={tableColumns.length}
                   className="text-center py-4 text-muted"
                 >
                   No results found
