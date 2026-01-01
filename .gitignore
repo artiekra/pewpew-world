@@ -4,7 +4,7 @@ data/data
 data/logs
 
 # Created by https://www.toptal.com/developers/gitignore/api/python,venv,nextjs,node,git,flask
-# Edit at https://www.toptal.com/developers/gitignore?templates=python,venv,nextjs,node,git,flask
+# EDIT MANUALLY ONLY
 
 ### Flask ###
 instance/*
@@ -29,7 +29,7 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
+# lib/
 lib64/
 parts/
 sdist/
