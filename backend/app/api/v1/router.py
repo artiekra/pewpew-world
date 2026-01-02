@@ -492,6 +492,73 @@ async def get_archived_blitz_leaderboard(timestamp: float):
 
 
 @router.get(
+    "/archive/uptime/blitz_leaderboard/{year}/{month}",
+    summary="Get Blitz leaderboard uptime status for a month",
+    description="Checks availability of Blitz leaderboard data for each day of a given month",
+    tags=["archive"],
+    response_model=MonthUptimeResponse,
+)
+async def get_blitz_leaderboard_uptime(year: int, month: int):
+    base_path = Path(__file__).parent.parent.parent.parent.parent / "data/data"
+    archive_path = base_path / f"blitz_lb_archive/blitz_lb_{month:02d}_{year}.json"
+
+    if not archive_path.exists():
+        raise HTTPException(
+            status_code=404, detail=f"No blitz archive found for {month}/{year}"
+        )
+
+    with open(archive_path, "r") as f:
+        archive = json.load(f)
+
+    next_month = (
+        datetime(year, month + 1, 1, tzinfo=timezone.utc)
+        if month < 12
+        else datetime(year + 1, 1, 1, tzinfo=timezone.utc)
+    )
+    days_in_month = (next_month - timedelta(days=1)).day
+
+    month_start = datetime(year, month, 1, tzinfo=timezone.utc)
+    month_end = (
+        datetime(year, month + 1, 1, tzinfo=timezone.utc)
+        if month < 12
+        else datetime(year + 1, 1, 1, tzinfo=timezone.utc)
+    )
+
+    days = []
+    for day in range(1, days_in_month + 1):
+        day_start = datetime(year, month, day, tzinfo=timezone.utc)
+        day_end = (
+            datetime(year, month, day + 1, tzinfo=timezone.utc)
+            if day < days_in_month
+            else month_end
+        )
+
+        day_start_ts = day_start.timestamp()
+        day_end_ts = day_end.timestamp()
+
+        entries_in_day = [
+            e for e in archive if day_start_ts <= e.get("timestamp", 0) < day_end_ts
+        ]
+
+        if not entries_in_day:
+            status = "no data"
+        else:
+            hours_with_data = set()
+            for entry in entries_in_day:
+                dt = datetime.fromtimestamp(entry.get("timestamp", 0), timezone.utc)
+                hours_with_data.add(dt.hour)
+
+            if len(hours_with_data) == 24:
+                status = "full data"
+            else:
+                status = "partially available"
+
+        days.append(DayStatus(day=day, status=status))
+
+    return MonthUptimeResponse(year=year, month=month, days=days)
+
+
+@router.get(
     "/archive/quests/{year}/{month}/{day}",
     summary="Get archived quests by date",
     description="Retrieves the quests entry for a specific date",
