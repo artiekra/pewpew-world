@@ -32,6 +32,11 @@ interface UptimeResponse {
   days: UptimeDay[];
 }
 
+const ARCHIVE_START_DATE = new Date(2025, 3, 9); // April 9th, 2025
+const ARCHIVE_START_DAY = 9;
+const ARCHIVE_START_MONTH = 3;
+const ARCHIVE_START_YEAR = 2025;
+
 type XPResponse = XPSuccessResponse | XPErrorResponse;
 
 const columns: ColumnDef<XPEntry>[] = [
@@ -118,23 +123,76 @@ export default function XPLeaderboardPage() {
 
   const calculateAvailability = () => {
     if (!uptimeData || uptimeData.days.length === 0) return 0;
-    const fullDataDays = uptimeData.days.filter(
+    const now = new Date();
+    const isCurrentOrFutureMonth =
+      uptimeData.year > now.getFullYear() ||
+      (uptimeData.year === now.getFullYear() &&
+        uptimeData.month > now.getMonth() + 1) ||
+      (uptimeData.year === now.getFullYear() &&
+        uptimeData.month === now.getMonth() + 1);
+    const currentDay = now.getDate();
+    const isBeforeArchiveStart =
+      uptimeData.year < ARCHIVE_START_YEAR ||
+      (uptimeData.year === ARCHIVE_START_YEAR &&
+        uptimeData.month < ARCHIVE_START_MONTH + 1);
+
+    const relevantDays = uptimeData.days.filter((d) => {
+      if (uptimeData.year < ARCHIVE_START_YEAR) return false;
+      if (uptimeData.year > ARCHIVE_START_YEAR) return true;
+      if (uptimeData.month < ARCHIVE_START_MONTH + 1) return false;
+      if (uptimeData.month > ARCHIVE_START_MONTH + 1) return true;
+      return d.day >= ARCHIVE_START_DAY;
+    });
+
+    if (relevantDays.length === 0) return 0;
+    const fullDataDays = relevantDays.filter(
       (d) => d.status === "full data",
     ).length;
-    return ((fullDataDays / uptimeData.days.length) * 100).toFixed(1);
+    return ((fullDataDays / relevantDays.length) * 100).toFixed(1);
   };
 
   const renderTrackingBlocks = () => {
     if (!uptimeData) return null;
-    return uptimeData.days.map((day) => (
-      <div
-        key={day.day}
-        className={`tracking-block ${getStatusClass(day.status)}`}
-        data-bs-toggle="tooltip"
-        data-bs-placement="top"
-        title={getStatusTitle(day.status)}
-      ></div>
-    ));
+    const now = new Date();
+    const isCurrentOrFutureMonth =
+      uptimeData.year > now.getFullYear() ||
+      (uptimeData.year === now.getFullYear() &&
+        uptimeData.month > now.getMonth() + 1) ||
+      (uptimeData.year === now.getFullYear() &&
+        uptimeData.month === now.getMonth() + 1);
+    const currentDay = now.getDate();
+    const isBeforeArchiveStart =
+      uptimeData.year < ARCHIVE_START_YEAR ||
+      (uptimeData.year === ARCHIVE_START_YEAR &&
+        uptimeData.month < ARCHIVE_START_MONTH + 1);
+
+    const isInArchiveMonth =
+      uptimeData.year === ARCHIVE_START_YEAR &&
+      uptimeData.month === ARCHIVE_START_MONTH + 1;
+
+    return uptimeData.days.map((day) => {
+      const isFutureDay =
+        isCurrentOrFutureMonth &&
+        day.status === "no data" &&
+        day.day > currentDay;
+      const isBeforeArchive =
+        isBeforeArchiveStart ||
+        (isInArchiveMonth &&
+          day.status === "no data" &&
+          day.day < ARCHIVE_START_DAY);
+
+      const isEmpty = isFutureDay || isBeforeArchive;
+
+      return (
+        <div
+          key={day.day}
+          className={`tracking-block ${isEmpty ? "" : getStatusClass(day.status)}`}
+          data-bs-toggle={isEmpty ? undefined : "tooltip"}
+          data-bs-placement={isEmpty ? undefined : "top"}
+          title={isEmpty ? undefined : getStatusTitle(day.status)}
+        ></div>
+      );
+    });
   };
 
   useEffect(() => {
@@ -146,7 +204,7 @@ export default function XPLeaderboardPage() {
 
     const timestamp = Math.floor(now.getTime() / 1000);
     fetchData(timestamp);
-    
+
     const currentYear = now.getFullYear();
     const currentMonth = now.getMonth() + 1;
     fetchUptimeData(currentYear, currentMonth);
@@ -161,6 +219,36 @@ export default function XPLeaderboardPage() {
       fetchData(timestamp);
       fetchUptimeData(date.getFullYear(), date.getMonth() + 1);
     }
+  };
+
+  const isValidDate = () => {
+    if (!selectedDate) return true;
+    const date = new Date(selectedDate);
+    const now = new Date();
+    const archiveStart = new Date(
+      ARCHIVE_START_YEAR,
+      ARCHIVE_START_MONTH,
+      ARCHIVE_START_DAY,
+    );
+    return date <= now && date >= archiveStart;
+  };
+
+  const getDateWarning = () => {
+    if (!selectedDate) return null;
+    const date = new Date(selectedDate);
+    const now = new Date();
+    const archiveStart = new Date(
+      ARCHIVE_START_YEAR,
+      ARCHIVE_START_MONTH,
+      ARCHIVE_START_DAY,
+    );
+    if (date > now) {
+      return "Cannot view future dates in the archive.";
+    }
+    if (date < archiveStart) {
+      return `Archive data starts on ${ARCHIVE_START_DATE.toLocaleDateString()}.`;
+    }
+    return null;
   };
 
   return (
@@ -191,14 +279,15 @@ export default function XPLeaderboardPage() {
         <div>
           <h4 className="alert-heading">Archive details</h4>
           <div className="alert-description">
-            Data starts on April 9th 2025. Server doesn't save the leaderboard
-            every minute, you will get the closest snapshot of data to the time
-            you select below. If there is a big difference between the date you
-            selected and the snapshot you get, it is probably because the server
-            was experiencing downtime.
+            Data starts on {ARCHIVE_START_DATE.toLocaleDateString()}. Server
+            doesn't save the leaderboard every minute, you will get the closest
+            snapshot of data to the time you select below. If there is a big
+            difference between the date you selected and the snapshot you get,
+            it is probably because the server was experiencing downtime.
           </div>
           <div className="alert-description">
-            <b>Select date and time in UTC timzone.</b>
+            The website is going to show how the leaderboard looked like on
+            selected date and time, <b>your timezone</b>.
           </div>
         </div>
       </div>
@@ -212,50 +301,59 @@ export default function XPLeaderboardPage() {
         />
       </div>
 
-      <div class="card mb-4">
-        <div class="card-body">
-          <div class="d-flex align-items-center">
-            <div class="subheader">Archive availability</div>
-            <div class="ms-auto lh-1 text-muted">
-              {uptimeData
-                ? `${new Date(
-                    uptimeData.year,
-                    uptimeData.month - 1,
-                  ).toLocaleString("default", { month: "long" })} ${uptimeData.year}`
-                : "Loading..."}
+      {!isValidDate() ? (
+        <div className="alert alert-warning">{getDateWarning()}</div>
+      ) : (
+        <>
+          <div class="card mb-4">
+            <div class="card-body">
+              <div class="d-flex align-items-center">
+                <div class="subheader">Archive availability</div>
+                <div class="ms-auto lh-1 text-muted">
+                  {uptimeData
+                    ? `${new Date(
+                        uptimeData.year,
+                        uptimeData.month - 1,
+                      ).toLocaleString("default", {
+                        month: "long",
+                      })} ${uptimeData.year}`
+                    : "Loading..."}
+                </div>
+              </div>
+              <div class="d-flex align-items-baseline">
+                <div class="h1 mb-3 me-2">{calculateAvailability()}%</div>
+              </div>
+              <div class="mt-2">
+                <div class="tracking">{renderTrackingBlocks()}</div>
+              </div>
             </div>
           </div>
-          <div class="d-flex align-items-baseline">
-            <div class="h1 mb-3 me-2">{calculateAvailability()}%</div>
-          </div>
-          <div class="mt-2">
-            <div class="tracking">{renderTrackingBlocks()}</div>
-          </div>
-        </div>
-      </div>
 
-      {isLoading ? (
-        <div className="text-center py-5">
-          <div className="spinner-border" role="status"></div>
-        </div>
-      ) : error ? (
-        <div className="alert alert-warning">
-          {error}. You can only select months starting with August 2025.
-        </div>
-      ) : actualTimestamp !== null ? (
-        <>
-          <p className="text-muted">
-            Showing data for {new Date(actualTimestamp * 1000).toLocaleString()}{" "}
-            your timezone (snapped at {actualTimestamp})
-          </p>
-          <DataTable
-            data={data}
-            columns={columns}
-            defaultSort={[{ id: "xp", desc: true }]}
-            title="XP Leaderboard"
-          />
+          {isLoading ? (
+            <div className="text-center py-5">
+              <div className="spinner-border" role="status"></div>
+            </div>
+          ) : error ? (
+            <div className="alert alert-warning">
+              {error}. You can only select months starting with August 2025.
+            </div>
+          ) : actualTimestamp !== null ? (
+            <>
+              <p className="text-muted">
+                Showing data for{" "}
+                {new Date(actualTimestamp * 1000).toLocaleString()} your
+                timezone (snapped at {actualTimestamp})
+              </p>
+              <DataTable
+                data={data}
+                columns={columns}
+                defaultSort={[{ id: "xp", desc: true }]}
+                title="XP Leaderboard"
+              />
+            </>
+          ) : null}
         </>
-      ) : null}
+      )}
     </div>
   );
 }
