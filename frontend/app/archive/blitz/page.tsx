@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { ColumnDef } from "@tanstack/react-table";
+import Link from "next/link";
 import DataTable from "@/components/data-table";
 import ColorizedText from "@/components/colorized-text";
 import api from "@/helpers/api";
@@ -43,7 +44,14 @@ const columns: ColumnDef<BlitzEntry>[] = [
   {
     accessorKey: "name",
     header: "Player",
-    cell: (info) => <ColorizedText text={info.getValue() as string} />,
+    cell: ({ row, getValue }) => (
+      <Link
+        href={`/player/${row.original.acc}`}
+        className="player-link text-reset"
+      >
+        <ColorizedText text={getValue() as string} />
+      </Link>
+    ),
   },
   {
     accessorKey: "bsr",

@@ -18,11 +18,13 @@ interface DataTableProps<TData> {
   showRowNumbers?: boolean; // New prop
 }
 
+const DEFAULT_SORTING: SortingState = [];
+
 export default function DataTable<TData>({
   data,
   columns,
   title = "Data Table",
-  defaultSort = [],
+  defaultSort = DEFAULT_SORTING,
   showRowNumbers = true, // Default to true
 }: DataTableProps<TData>) {
   const [sorting, setSorting] = useState<SortingState>(defaultSort);

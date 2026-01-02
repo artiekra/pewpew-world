@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { ColumnDef } from "@tanstack/react-table";
+import Link from "next/link";
 import ChevronButton from "@/components/chevron-button";
 import Accordion, { AccordionItem } from "@/components/accordion";
 import DataTable from "@/components/data-table";
@@ -45,6 +46,7 @@ const columns: ColumnDef<LeaderboardEntry>[] = [
     cell: ({ row, getValue }) => {
       const countryCode = row.original.country;
       const flag = getFlagEmoji(countryCode);
+      const uuid = row.original.player_uuid;
 
       return (
         <div className="d-flex align-items-center">
@@ -56,7 +58,9 @@ const columns: ColumnDef<LeaderboardEntry>[] = [
             {flag}
           </span>
           {/* <span className="badge bg-blue-lt me-2">{countryCode}</span> */}
-          <ColorizedText text={getValue() as string} />
+          <Link href={`/player/${uuid}`} className="player-link text-reset">
+            <ColorizedText text={getValue() as string} />
+          </Link>
         </div>
       );
     },
