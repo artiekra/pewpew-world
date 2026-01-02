@@ -1,5 +1,3 @@
-"use client";
-
 import { useState, useEffect, useMemo } from "react";
 import {
   useReactTable,
@@ -10,6 +8,7 @@ import {
   ColumnDef,
   SortingState,
 } from "@tanstack/react-table";
+import { stripColorCodes } from "@/helpers/text-utils";
 
 interface DataTableProps<TData> {
   data: TData[];
@@ -62,6 +61,13 @@ export default function DataTable<TData>({
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
+    globalFilterFn: (row, columnId, filterValue) => {
+      const value = row.getValue(columnId);
+      if (value == null) return false;
+      const cleanValue = stripColorCodes(String(value)).toLowerCase();
+      const cleanFilter = stripColorCodes(String(filterValue)).toLowerCase();
+      return cleanValue.includes(cleanFilter);
+    },
   });
 
   // Helper to get the correct icon based on sort state

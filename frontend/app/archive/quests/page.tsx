@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import ColorizedText from "@/components/colorized-text";
-import api from "@/lib/api";
+import api from "@/helpers/api";
 
 interface QuestLevel {
   uuid: string;

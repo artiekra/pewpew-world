@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import DataTable from "@/components/data-table";
 import ColorizedText from "@/components/colorized-text";
-import api from "@/lib/api";
+import api from "@/helpers/api";
 
 interface BlitzEntry {
   acc: string;
@@ -300,11 +300,11 @@ export default function BlitzLeaderboardPage() {
         <div className="alert alert-warning">{getDateWarning()}</div>
       ) : (
         <>
-          <div class="card mb-4">
-            <div class="card-body">
-              <div class="d-flex align-items-center">
-                <div class="subheader">Archive availability</div>
-                <div class="ms-auto lh-1 text-muted">
+          <div className="card mb-4">
+            <div className="card-body">
+              <div className="d-flex align-items-center">
+                <div className="subheader">Archive availability</div>
+                <div className="ms-auto lh-1 text-muted">
                   {uptimeData
                     ? `${new Date(
                         uptimeData.year,
@@ -315,11 +315,11 @@ export default function BlitzLeaderboardPage() {
                     : "Loading..."}
                 </div>
               </div>
-              <div class="d-flex align-items-baseline">
-                <div class="h1 mb-3 me-2">{calculateAvailability()}%</div>
+              <div className="d-flex align-items-baseline">
+                <div className="h1 mb-3 me-2">{calculateAvailability()}%</div>
               </div>
-              <div class="mt-2">
-                <div class="tracking">{renderTrackingBlocks()}</div>
+              <div className="mt-2">
+                <div className="tracking">{renderTrackingBlocks()}</div>
               </div>
             </div>
           </div>

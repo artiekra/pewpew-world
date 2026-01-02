@@ -6,7 +6,7 @@ import ChevronButton from "@/components/chevron-button";
 import Accordion, { AccordionItem } from "@/components/accordion";
 import DataTable from "@/components/data-table";
 import ColorizedText from "@/components/colorized-text";
-import api from "@/lib/api";
+import api from "@/helpers/api";
 
 interface LeaderboardEntry {
   player_uuid: string;
