@@ -91,7 +91,9 @@ export default function PlayerProfilePage() {
   const [placements, setPlacements] =
     useState<PlayerLeaderboardPlacementsResponse | null>(null);
   const [xpHistory, setXpHistory] = useState<XPHistoryEntry[] | null>(null);
-  const [blitzHistory, setBlitzHistory] = useState<BlitzHistoryEntry[] | null>(null);
+  const [blitzHistory, setBlitzHistory] = useState<BlitzHistoryEntry[] | null>(
+    null,
+  );
   const [scores, setScores] = useState<FlattenedScore[] | null>(null);
 
   useEffect(() => {
@@ -119,26 +121,28 @@ export default function PlayerProfilePage() {
       );
     });
 
-    api.get(`/v1/comparison/get_scores_by_level?player_uuids=${uuid}`).then((res) => {
-      if (res.data && res.data.levels) {
-        const flatScores: FlattenedScore[] = [];
-        res.data.levels.forEach((level: LevelScoresGroup) => {
-          level.scores.forEach((score) => {
-            flatScores.push({
-              level_uuid: level.level_uuid,
-              level_name: level.level_name,
-              score: score.score,
-              value_type: score.value_type,
-              timestamp: score.timestamp,
-              country: score.country,
+    api
+      .get(`/v1/comparison/get_scores_by_level?player_uuids=${uuid}`)
+      .then((res) => {
+        if (res.data && res.data.levels) {
+          const flatScores: FlattenedScore[] = [];
+          res.data.levels.forEach((level: LevelScoresGroup) => {
+            level.scores.forEach((score) => {
+              flatScores.push({
+                level_uuid: level.level_uuid,
+                level_name: level.level_name,
+                score: score.score,
+                value_type: score.value_type,
+                timestamp: score.timestamp,
+                country: score.country,
+              });
             });
           });
-        });
-        setScores(flatScores);
-      } else {
-        setScores([]);
-      }
-    });
+          setScores(flatScores);
+        } else {
+          setScores([]);
+        }
+      });
   }, [uuid]);
 
   const renderPlacement = (title: string, placement: LeaderboardPlacement) => {
@@ -229,8 +233,13 @@ export default function PlayerProfilePage() {
 
   const [showAllHistory, setShowAllHistory] = useState(false);
 
-  const displayedHistory = history ? (showAllHistory ? history : history.slice(0, 5)) : [];
-  const latestUsername = history && history.length > 0 ? history[0].new_name : null;
+  const displayedHistory = history
+    ? showAllHistory
+      ? history
+      : history.slice(0, 5)
+    : [];
+  const latestUsername =
+    history && history.length > 0 ? history[0].new_name : null;
 
   return (
     <div className="container-xl p-4">
@@ -321,7 +330,7 @@ export default function PlayerProfilePage() {
         <div className="row row-cards">
           {xpHistory && xpHistory.length >= 2 ? (
             <div className="col-md-6">
-              <div className="card mb-4">
+              <div className="card">
                 <div className="card-body ps-0">
                   <div className="ps-3">
                     <div className="subheader mb-3">XP Growth</div>
@@ -419,7 +428,7 @@ export default function PlayerProfilePage() {
             </div>
           ) : xpHistory === null ? (
             <div className="col-md-6">
-              <div className="card mb-4">
+              <div className="card">
                 <div className="card-body ps-0">
                   <div className="ps-3">
                     <div className="subheader mb-3">XP Growth</div>
@@ -437,7 +446,7 @@ export default function PlayerProfilePage() {
 
           {blitzHistory && blitzHistory.length >= 2 ? (
             <div className="col-md-6">
-              <div className="card mb-4">
+              <div className="card">
                 <div className="card-body ps-0">
                   <div className="ps-3">
                     <div className="subheader mb-3">Blitz Growth</div>
@@ -536,7 +545,7 @@ export default function PlayerProfilePage() {
             </div>
           ) : blitzHistory === null ? (
             <div className="col-md-6">
-              <div className="card mb-4">
+              <div className="card">
                 <div className="card-body ps-0">
                   <div className="ps-3">
                     <div className="subheader mb-3">Blitz Growth</div>
@@ -554,7 +563,7 @@ export default function PlayerProfilePage() {
         </div>
 
         {history && history.length > 1 ? (
-          <div className="mt-2 mb-4">
+          <div className="mt-4">
             <div className="subheader mb-2">Username History</div>
             <div className="text-muted small">
               {displayedHistory.map((change, index) => (
@@ -578,7 +587,7 @@ export default function PlayerProfilePage() {
             )}
           </div>
         ) : history === null ? (
-          <div className="mt-2 mb-4">
+          <div className="mt-4">
             <div className="subheader mb-2">Username History</div>
             <div className="text-muted small d-flex align-items-center">
               <span className="spinner-border spinner-border-sm me-2" />
@@ -588,7 +597,7 @@ export default function PlayerProfilePage() {
         ) : null}
 
         {scores && scores.length > 0 ? (
-          <div>
+          <div className="mt-4">
             <DataTable
               data={scores}
               columns={columns}
