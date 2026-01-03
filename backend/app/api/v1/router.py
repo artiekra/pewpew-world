@@ -151,6 +151,7 @@ class PlayerLevelScore(BaseModel):
 
 class LevelScoresGroup(BaseModel):
     level_uuid: str
+    level_name: str
     scores: List[PlayerLevelScore]
 
 
@@ -643,8 +644,7 @@ async def get_quests_uptime(year: int, month: int):
         day_end_ts = day_end.timestamp()
 
         has_data = any(
-            day_start_ts <= entry.get("timestamp", 0) < day_end_ts
-            for entry in archive
+            day_start_ts <= entry.get("timestamp", 0) < day_end_ts for entry in archive
         )
 
         status = "full data" if has_data else "no data"
@@ -895,20 +895,19 @@ async def compare_scores_by_level(
             timestamp = float(row["date"])
             country = row["country"]
 
-            key = (player_uuid, level_uuid)
+            key = (player_uuid, level_uuid, value_type)
 
             if key not in player_scores or timestamp > player_scores[key]["timestamp"]:
                 player_scores[key] = {
                     "score": score,
                     "level_version": level_version,
-                    "value_type": value_type,
                     "timestamp": timestamp,
                     "country": country,
                 }
 
     level_groups = {}
 
-    for (player_uuid, level_uuid), score_data in player_scores.items():
+    for (player_uuid, level_uuid, value_type), score_data in player_scores.items():
         if level_uuid not in level_groups:
             level_groups[level_uuid] = []
 
@@ -917,7 +916,7 @@ async def compare_scores_by_level(
                 player_uuid=player_uuid,
                 score=score_data["score"],
                 level_version=score_data["level_version"],
-                value_type=score_data["value_type"],
+                value_type=value_type,
                 timestamp=score_data["timestamp"],
                 country=score_data["country"],
             )
@@ -925,9 +924,18 @@ async def compare_scores_by_level(
 
     levels_sorted = sorted(level_groups.keys())
 
+    level_data_path = base_path / "github_data/level_data.csv"
+    level_name_map = {}
+    if level_data_path.exists():
+        with open(level_data_path, "r") as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                level_name_map[row["level_uuid"]] = row["name"]
+
     levels = [
         LevelScoresGroup(
             level_uuid=level_uuid,
+            level_name=level_name_map.get(level_uuid, level_uuid),
             scores=sorted(
                 level_groups[level_uuid], key=lambda x: x.score, reverse=True
             ),

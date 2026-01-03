@@ -4,6 +4,8 @@ import { useParams } from "next/navigation";
 import { useEffect, useState, useMemo } from "react";
 import api from "@/helpers/api";
 import ColorizedText from "@/components/colorized-text";
+import DataTable from "@/components/data-table";
+import { ColumnDef } from "@tanstack/react-table";
 import dynamic from "next/dynamic";
 
 const Chart = dynamic(() => import("react-apexcharts"), { ssr: false });
@@ -51,6 +53,35 @@ interface BlitzHistoryResponse {
   history: BlitzHistoryEntry[];
 }
 
+interface PlayerLevelScore {
+  player_uuid: string;
+  score: number;
+  level_version: number;
+  value_type: number;
+  timestamp: number;
+  country: string;
+}
+
+interface LevelScoresGroup {
+  level_uuid: string;
+  level_name: string;
+  scores: PlayerLevelScore[];
+}
+
+interface ComparisonResponse {
+  players: string[];
+  levels: LevelScoresGroup[];
+}
+
+interface FlattenedScore {
+  level_uuid: string;
+  level_name: string;
+  score: number;
+  value_type: number;
+  timestamp: number;
+  country: string;
+}
+
 export default function PlayerProfilePage() {
   const params = useParams();
   const uuid = params?.uuid as string;
@@ -59,6 +90,7 @@ export default function PlayerProfilePage() {
     useState<PlayerLeaderboardPlacementsResponse | null>(null);
   const [xpHistory, setXpHistory] = useState<XPHistoryEntry[]>([]);
   const [blitzHistory, setBlitzHistory] = useState<BlitzHistoryEntry[]>([]);
+  const [scores, setScores] = useState<FlattenedScore[]>([]);
   const [loading, setLoading] = useState(true);
   const [progress, setProgress] = useState(0);
 
@@ -79,12 +111,14 @@ export default function PlayerProfilePage() {
 
     async function fetchData() {
       try {
-        const [historyRes, placementsRes, xpRes, blitzRes] = await Promise.all([
-          api.get(`/v1/player/${uuid}/get_username_change_history`),
-          api.get(`/v1/player/${uuid}/get_leaderboard_placements`),
-          api.get(`/v1/player/${uuid}/get_xp_history?sample_rate=1200`),
-          api.get(`/v1/player/${uuid}/get_blitz_history?sample_rate=60`),
-        ]);
+        const [historyRes, placementsRes, xpRes, blitzRes, scoresRes] =
+          await Promise.all([
+            api.get(`/v1/player/${uuid}/get_username_change_history`),
+            api.get(`/v1/player/${uuid}/get_leaderboard_placements`),
+            api.get(`/v1/player/${uuid}/get_xp_history?sample_rate=1200`),
+            api.get(`/v1/player/${uuid}/get_blitz_history?sample_rate=60`),
+            api.get(`/v1/comparison/get_scores_by_level?player_uuids=${uuid}`),
+          ]);
 
         setHistory(historyRes.data.changes.reverse());
         setPlacements(placementsRes.data);
@@ -98,6 +132,23 @@ export default function PlayerProfilePage() {
             .map((h: any) => ({ ...h, bsr: h.bsr / 10 }))
             .sort((a: any, b: any) => a.timestamp - b.timestamp),
         );
+
+        if (scoresRes.data && scoresRes.data.levels) {
+          const flatScores: FlattenedScore[] = [];
+          scoresRes.data.levels.forEach((level: LevelScoresGroup) => {
+            level.scores.forEach((score) => {
+              flatScores.push({
+                level_uuid: level.level_uuid,
+                level_name: level.level_name,
+                score: score.score,
+                value_type: score.value_type,
+                timestamp: score.timestamp,
+                country: score.country,
+              });
+            });
+          });
+          setScores(flatScores);
+        }
       } catch (error) {
         console.error("Failed to fetch player data:", error);
       } finally {
@@ -156,6 +207,49 @@ export default function PlayerProfilePage() {
       </div>
     );
   };
+
+  const columns = useMemo<ColumnDef<FlattenedScore>[]>(
+    () => [
+      {
+        accessorKey: "level_name",
+        header: "Level",
+        cell: ({ row }) => (
+          <div className="text-truncate" style={{ maxWidth: "180px" }}>
+            {row.original.value_type === 1 && (
+              <span className="me-2" title="Speedrun">
+                ⚡
+              </span>
+            )}
+            <ColorizedText text={row.original.level_name} />
+          </div>
+        ),
+      },
+      {
+        accessorKey: "score",
+        header: "Score",
+        cell: ({ row }) => {
+          const val = row.original.score;
+          if (row.original.value_type === 1) {
+            const totalSeconds = Math.abs(val) / 30;
+            const minutes = Math.floor(totalSeconds / 60);
+            const seconds = Math.floor(totalSeconds % 60);
+            const fraction = Math.round(
+              (totalSeconds - Math.floor(totalSeconds)) * 100,
+            );
+            return `${minutes}:${seconds.toString().padStart(2, "0")}.${fraction.toString().padStart(2, "0")}`;
+          }
+          return val.toLocaleString();
+        },
+      },
+      {
+        accessorKey: "timestamp",
+        header: "Date",
+        cell: ({ row }) =>
+          new Date(row.original.timestamp * 1000).toLocaleString(),
+      },
+    ],
+    [],
+  );
 
   const [showAllHistory, setShowAllHistory] = useState(false);
 
@@ -396,7 +490,7 @@ export default function PlayerProfilePage() {
             </div>
 
             {history.length > 1 && (
-              <div className="mt-2">
+              <div className="mt-2 mb-4">
                 <div className="subheader mb-2">Username History</div>
                 <div className="text-muted small">
                   {displayedHistory.map((change, index) => (
@@ -418,6 +512,18 @@ export default function PlayerProfilePage() {
                       : `Show ${history.length - 5} more...`}
                   </button>
                 )}
+              </div>
+            )}
+
+            {scores.length > 0 && (
+              <div>
+                <DataTable
+                  data={scores}
+                  columns={columns}
+                  title="Player Scores"
+                  defaultSort={[{ id: "timestamp", desc: true }]}
+                  showRowNumbers={false}
+                />
               </div>
             )}
           </>
