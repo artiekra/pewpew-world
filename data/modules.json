@@ -29,6 +29,6 @@
   },
   {
     "module": "modules.player_data",
-    "cron": "10 * * * *"
+    "cron": "5 * * * *"
   }
 ]
