@@ -21,14 +21,14 @@
   },
   {
     "module": "modules.xp_lb_archive",
-    "cron": "0 * * * *"
+    "cron": "5 * * * *"
   },
   {
     "module": "modules.blitz_lb_archive",
-    "cron": "0 * * * *"
+    "cron": "15 * * * *"
   },
   {
     "module": "modules.player_data",
-    "cron": "5 * * * *"
+    "cron": "20 * * * *"
   }
 ]

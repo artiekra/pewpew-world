@@ -1,14 +1,23 @@
 "use client";
 
 import Link from "next/link";
-import { IconHome, IconTrophy, IconArchive, IconUsers, IconCode, IconSun, IconMoon } from "@tabler/icons-react";
+import {
+  IconHome,
+  IconTrophy,
+  IconArchive,
+  IconUsers,
+  IconCode,
+  IconSun,
+  IconMoon,
+  IconExternalLink,
+} from "@tabler/icons-react";
 import { useTheme } from "@/components/theme-provider";
 
 interface NavItem {
   label: string;
   href: string;
   icon?: React.ReactNode;
-  subitems?: { label: string; href: string }[];
+  subitems?: { label: string; href: string; icon?: React.ReactNode }[];
 }
 
 const navItems: NavItem[] = [
@@ -62,8 +71,11 @@ const navItems: NavItem[] = [
     href: "/dev",
     icon: <IconCode size={24} />,
     subitems: [
-      { label: "Blitz Config Generator", href: "/dev/blitz-config" },
-      { label: "Mesh Editor", href: "/dev/mesh-editor" },
+      {
+        label: "Blitz Config Generator",
+        href: "https://ppl.artiekra.org/sandbox-config-generator/",
+      },
+      { label: "Mesh Editor", href: "https://ppl.artiekra.org/mesh-editor/" },
     ],
   },
 ];
@@ -102,7 +114,10 @@ export default function Navbar() {
           <div className="d-flex flex-column flex-md-row flex-fill align-items-stretch align-items-md-center">
             <ul className="navbar-nav">
               {navItems.map((item) => (
-                <li key={item.href} className={`nav-item ${item.subitems ? "dropdown" : ""}`}>
+                <li
+                  key={item.href}
+                  className={`nav-item ${item.subitems ? "dropdown" : ""}`}
+                >
                   <Link
                     className={`nav-link ${item.subitems ? "dropdown-toggle" : ""}`}
                     href={item.href}
@@ -116,7 +131,24 @@ export default function Navbar() {
                   {item.subitems && (
                     <div className="dropdown-menu dropdown-menu-arrow">
                       {item.subitems.map((subitem) => (
-                        <Link key={subitem.href} className="dropdown-item" href={subitem.href}>
+                        <Link
+                          key={subitem.href}
+                          className="dropdown-item"
+                          href={subitem.href}
+                          target={
+                            subitem.href.startsWith("http")
+                              ? "_blank"
+                              : undefined
+                          }
+                          rel={
+                            subitem.href.startsWith("http")
+                              ? "noopener noreferrer"
+                              : undefined
+                          }
+                        >
+                          {subitem.icon && (
+                            <span className="me-2">{subitem.icon}</span>
+                          )}
                           {subitem.label}
                         </Link>
                       ))}

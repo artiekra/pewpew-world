@@ -152,10 +152,10 @@ export default function MonthlyLeaderboardPage() {
         the month will get special badge, which tracks amount of wins in the
         monthly leaderboard.
       </p>
-      <div className="btn-list">
-        <ChevronButton label="Archive" />
-        <ChevronButton label="Past levels" />
-      </div>
+      {/* <div className="btn-list"> */}
+      {/*   <ChevronButton label="Archive" /> */}
+      {/*   <ChevronButton label="Past levels" /> */}
+      {/* </div> */}
 
       <Accordion id="monthly-leaderboard-accordion">
         <AccordionItem id="one" title="Level selection rules">
