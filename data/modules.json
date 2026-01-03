@@ -1,30 +1,34 @@
 [
-    {
-        "module": "modules.github_data",
-        "cron": "0 2 * * *"
-    },
-    {
-        "module": "modules.monthly_lb_monthly",
-        "cron": "0 1 1 * *"
-    },
-    {
-        "module": "modules.monthly_lb_daily",
-        "cron": "30 2 * * *"
-    },
-    {
-        "module": "modules.speedrun_lb_daily",
-        "cron": "0 3 * * *"
-    },
-    {
-        "module": "modules.quests_archive",
-        "cron": "10 0 * * *"
-    },
-    {
-        "module": "modules.xp_lb_archive",
-        "cron": "0 * * * *"
-    },
-    {
-        "module": "modules.blitz_lb_archive",
-        "cron": "0 * * * *"
-    }
+  {
+    "module": "modules.github_data",
+    "cron": "0 2 * * *"
+  },
+  {
+    "module": "modules.monthly_lb_monthly",
+    "cron": "0 1 1 * *"
+  },
+  {
+    "module": "modules.monthly_lb_daily",
+    "cron": "30 2 * * *"
+  },
+  {
+    "module": "modules.speedrun_lb_daily",
+    "cron": "0 3 * * *"
+  },
+  {
+    "module": "modules.quests_archive",
+    "cron": "10 0 * * *"
+  },
+  {
+    "module": "modules.xp_lb_archive",
+    "cron": "0 * * * *"
+  },
+  {
+    "module": "modules.blitz_lb_archive",
+    "cron": "0 * * * *"
+  },
+  {
+    "module": "modules.player_data",
+    "cron": "10 * * * *"
+  }
 ]
