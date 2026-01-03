@@ -82,6 +82,7 @@ export default function ComparePage() {
   const [loading, setLoading] = useState(true);
   const [newPlayerId, setNewPlayerId] = useState("");
   const [addingPlayer, setAddingPlayer] = useState(false);
+  const [showMobileList, setShowMobileList] = useState(false);
 
   useEffect(() => {
     if (playerUuids.length === 0) {
@@ -144,21 +145,47 @@ export default function ComparePage() {
   const processComparisonData = (data: ComparisonResponse) => {
     if (!data.levels) return;
 
-    const rows: ComparisonRow[] = data.levels.map((level) => {
-      const row: ComparisonRow = {
-        level_uuid: level.level_uuid,
-        level_name: level.level_name,
-        value_type: level.scores.length > 0 ? level.scores[0].value_type : 0,
-      };
+    const rows: ComparisonRow[] = [];
 
-      level.scores.forEach((score) => {
-        row[score.player_uuid] = {
-          score: score.score,
-          timestamp: score.timestamp,
+    data.levels.forEach((level) => {
+      // Group scores by value_type
+      const scoresByType = new Map<number, PlayerLevelScore[]>();
+
+      // Initialize with 0 if no scores, but we iterate level.scores anyway.
+      // If level.scores is empty, we still want a row?
+      // Original logic: value_type was 0 if empty.
+      if (level.scores.length === 0) {
+        const row: ComparisonRow = {
+          level_uuid: level.level_uuid,
+          level_name: level.level_name,
+          value_type: 0,
         };
-      });
+        rows.push(row);
+      } else {
+        level.scores.forEach((score) => {
+          if (!scoresByType.has(score.value_type)) {
+            scoresByType.set(score.value_type, []);
+          }
+          scoresByType.get(score.value_type)!.push(score);
+        });
 
-      return row;
+        scoresByType.forEach((scores, type) => {
+          const row: ComparisonRow = {
+            level_uuid: level.level_uuid,
+            level_name: level.level_name,
+            value_type: type,
+          };
+
+          scores.forEach((s) => {
+            row[s.player_uuid] = {
+              score: s.score,
+              timestamp: s.timestamp,
+            };
+          });
+
+          rows.push(row);
+        });
+      }
     });
 
     setComparisonData(rows);
@@ -354,23 +381,12 @@ export default function ComparePage() {
             if (scores.length > 1) {
               const maxScore = Math.max(...scores);
               const minScore = Math.min(...scores);
-              // Note: For speedruns (value_type 1), lower is better?
-              // Assuming standard points for now. Wait, usually speedrun is lower is better.
-              // But the API returns scores, and usually for leaderboards, higher is better?
-              // Actually, let's check value_type 1.
-              // In previous code:
-              // "if (row.original.value_type === 1) { const totalSeconds = Math.abs(val) / 30; ... }"
-              // This implies value is frames (int). Lower frames is better for time.
-              // If standard score, bigger is better.
+              // For speedruns (value_type 1), scores are negated ticks.
+              // So -100 (100 ticks) is > -200 (200 ticks). Max is best.
+              // For normal scores (value_type 0), higher points is best. Max is best.
 
-              const isSpeedrun = row.original.value_type === 1;
-
-              // If speedrun, min value (frames) is best (green), max is worst (red)
-              // If regular score, max value is best (green), min is worst (red)
-
-              // Adjust logic:
-              const bestScore = isSpeedrun ? minScore : maxScore;
-              const worstScore = isSpeedrun ? maxScore : minScore;
+              const bestScore = maxScore;
+              const worstScore = minScore;
 
               if (pData.score === bestScore) color = "var(--tblr-green)";
               else if (pData.score === worstScore) color = "var(--tblr-red)";
@@ -379,7 +395,7 @@ export default function ComparePage() {
 
           let displayVal = pData.score.toLocaleString();
           if (row.original.value_type === 1) {
-            const totalSeconds = Math.abs(pData.score) / 30;
+            const totalSeconds = (pData.score * -1) / 30; // Negate to get positive ticks, then divide by 30
             const minutes = Math.floor(totalSeconds / 60);
             const seconds = Math.floor(totalSeconds % 60);
             const fraction = Math.round(
@@ -416,21 +432,78 @@ export default function ComparePage() {
   return (
     <div className="container-xl p-4">
       <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2 className="page-title">Player Comparison</h2>
+        <h2 className="page-title">Comparing</h2>
         <div className="d-flex gap-2">
-          {playersData.map((p) => (
-            <div
-              key={p.uuid}
-              className="badge bg-blue-lt d-flex align-items-center gap-2 p-2"
+          <div className="d-none d-md-flex gap-2 flex-wrap">
+            {playersData.map((p) => (
+              <div
+                key={p.uuid}
+                className="badge bg-blue-lt d-flex align-items-center gap-2 p-2"
+              >
+                <ColorizedText text={p.name} />
+                <button
+                  onClick={() => removePlayer(p.uuid)}
+                  className="btn-close btn-close-white"
+                  style={{ fontSize: "0.6rem" }}
+                ></button>
+              </div>
+            ))}
+          </div>
+          <div className="d-md-none dropdown d-inline-block">
+            <button
+              className="btn dropdown-toggle"
+              onClick={() => setShowMobileList(!showMobileList)}
             >
-              <ColorizedText text={p.name} />
-              <button
-                onClick={() => removePlayer(p.uuid)}
-                className="btn-close btn-close-white"
-                style={{ fontSize: "0.6rem" }}
-              ></button>
-            </div>
-          ))}
+              {playersData.length} Selected
+            </button>
+            {showMobileList && (
+              <div
+                className="dropdown-menu show p-2 dropdown-menu-end"
+                style={{ width: "150px", right: "auto" }}
+              >
+                {playersData.length === 0 && (
+                  <span className="text-muted p-2 d-block text-center">
+                    No players
+                  </span>
+                )}
+                {playersData.map((p) => (
+                  <div
+                    key={p.uuid}
+                    className="d-flex justify-content-between align-items-center mb-2 px-1"
+                  >
+                    <div
+                      className="text-truncate"
+                      style={{ maxWidth: "150px" }}
+                    >
+                      <ColorizedText text={p.name} />
+                    </div>
+                    <button
+                      onClick={() => removePlayer(p.uuid)}
+                      className="btn btn-sm btn-icon btn-ghost-danger"
+                      title="Remove"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="icon icon-tabler icon-tabler-x"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        strokeWidth="2"
+                        stroke="currentColor"
+                        fill="none"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                        <path d="M18 6l-12 12" />
+                        <path d="M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
           <div className="dropdown d-inline-block">
             <button
               className="btn btn-icon"
@@ -496,8 +569,8 @@ export default function ComparePage() {
               {comparisonData.length > 0 && renderScoresTable()}
             </>
           ) : (
-            <div class="alert alert-warning" role="alert">
-              <div class="alert-icon">
+            <div className="alert alert-warning" role="alert">
+              <div className="alert-icon">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="24"
@@ -516,12 +589,12 @@ export default function ComparePage() {
                 </svg>
               </div>
               <div>
-                <h4 class="alert-heading">
+                <h4 className="alert-heading">
                   {playersData.length === 0
                     ? "No players selected"
                     : "Not enough players"}
                 </h4>
-                <div class="alert-description">
+                <div className="alert-description">
                   At least 2 players must be selected to compare
                 </div>
               </div>
