@@ -615,25 +615,30 @@ export default function ComparePage() {
             </button>
             {addingPlayer && (
               <div
-                className="dropdown-menu show p-3"
+                className="dropdown-menu dropdown-menu-end dropdown-menu-card show"
                 style={{ width: "300px", right: 0, left: "auto" }}
               >
-                <div className="mb-2">
-                  <label className="form-label">Player UUID</label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    value={newPlayerId}
-                    onChange={(e) => setNewPlayerId(e.target.value)}
-                    placeholder="Enter UUID"
-                  />
+                <div className="card">
+                  <div className="card-body">
+                    <h3 className="card-title">Add Player</h3>
+                    <div className="mb-3">
+                      <label className="form-label">Player UUID</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={newPlayerId}
+                        onChange={(e) => setNewPlayerId(e.target.value)}
+                        placeholder="Enter UUID"
+                      />
+                    </div>
+                    <button
+                      className="btn btn-primary w-100"
+                      onClick={handleAddPlayer}
+                    >
+                      Add
+                    </button>
+                  </div>
                 </div>
-                <button
-                  className="btn btn-primary w-100"
-                  onClick={handleAddPlayer}
-                >
-                  Add
-                </button>
               </div>
             )}
           </div>

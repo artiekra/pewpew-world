@@ -175,6 +175,15 @@ class ComparisonResponse(BaseModel):
     levels: List[LevelScoresGroup]
 
 
+class PlayerShortInfo(BaseModel):
+    account_id: str
+    username: str
+
+
+class PlayersResponse(BaseModel):
+    players: List[PlayerShortInfo]
+
+
 @router.get(
     "/",
     summary="Root endpoint",
@@ -1008,3 +1017,33 @@ async def compare_scores_by_level(
     ]
 
     return ComparisonResponse(players=player_uuids, levels=levels)
+
+
+@router.get(
+    "/data/get_players",
+    summary="Get all players",
+    description="Retrieves all player data from the player-data.csv storage",
+    tags=["data"],
+    response_model=PlayersResponse,
+)
+async def get_players():
+    base_path = Path(__file__).parent.parent.parent.parent.parent / "data/data"
+    player_data_path = base_path / "github_data/account_data.csv"
+
+    players = []
+    try:
+        with open(player_data_path, "r", encoding="utf-8") as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                players.append(
+                    PlayerShortInfo(
+                        account_id=row.get("account_id", row.get("account_ids", "")),
+                        username=row.get("username", ""),
+                    )
+                )
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Error reading player data: {str(e)}"
+        )
+
+    return PlayersResponse(players=players)
