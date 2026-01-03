@@ -32,7 +32,31 @@ const navItems: NavItem[] = [
       { label: "Quests", href: "/archive/quests" },
     ],
   },
-  { label: "Players", href: "/players", icon: <IconUsers size={24} /> },
+  {
+    label: "Comparison",
+    href: "/compare",
+    icon: (
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="icon icon-tabler icon-tabler-scale"
+      >
+        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+        <path d="M7 20l10 0" />
+        <path d="M6 6l6 -1l6 1" />
+        <path d="M12 3l0 17" />
+        <path d="M9 12l-3 -6l-3 6a3 3 0 0 0 6 0" />
+        <path d="M21 12l-3 -6l-3 6a3 3 0 0 0 6 0" />
+      </svg>
+    ),
+  },
   {
     label: "Dev",
     href: "/dev",
@@ -61,7 +85,7 @@ export default function Navbar() {
         >
           <span className="navbar-toggler-icon"></span>
         </button>
-        
+
         <h1 className="navbar-brand d-none-navbar-horizontal pe-0 pe-md-3">
           <Link href="/">
             <img
@@ -79,8 +103,8 @@ export default function Navbar() {
             <ul className="navbar-nav">
               {navItems.map((item) => (
                 <li key={item.href} className={`nav-item ${item.subitems ? "dropdown" : ""}`}>
-                  <Link 
-                    className={`nav-link ${item.subitems ? "dropdown-toggle" : ""}`} 
+                  <Link
+                    className={`nav-link ${item.subitems ? "dropdown-toggle" : ""}`}
                     href={item.href}
                     {...(item.subitems ? { "data-bs-toggle": "dropdown" } : {})}
                   >
