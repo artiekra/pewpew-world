@@ -258,14 +258,21 @@ export default function PlayerProfilePage() {
 
   return (
     <div className="container-xl p-4">
-      <h2 className="page-title">
-        {latestUsername ? (
-          <ColorizedText text={latestUsername} />
-        ) : (
-          "Player Profile"
-        )}
-      </h2>
-      <div className="text-muted mt-1">UUID: {uuid}</div>
+      <div className="d-flex justify-content-between align-items-center">
+        <div>
+          <h2 className="page-title">
+            {latestUsername ? (
+              <ColorizedText text={latestUsername} />
+            ) : (
+              "Player Profile"
+            )}
+          </h2>
+          <div className="text-muted mt-1">UUID: {uuid}</div>
+        </div>
+        <a href={`/compare?players=${uuid}`} className="btn btn-primary">
+          Compare
+        </a>
+      </div>
 
       <div className="page-body">
         {loading ? (
