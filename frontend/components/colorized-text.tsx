@@ -57,7 +57,7 @@ export default function ColorizedText({
   const segments = useMemo(() => parseColoredString(text), [text]);
 
   return (
-    <>
+    <span>
       <style jsx>{`
         .adaptive-color {
           color: var(--c-light);
@@ -93,6 +93,6 @@ export default function ColorizedText({
           </span>
         );
       })}
-    </>
+    </span>
   );
 }
