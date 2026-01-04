@@ -175,7 +175,7 @@ export default function SpeedrunLeaderboardPage() {
                   data-bs-toggle="dropdown"
                 >
                   {levelScope === "all"
-                    ? "Official & Community"
+                    ? "Every"
                     : levelScope === "official"
                       ? "Only Official"
                       : "Only Community"}
@@ -189,7 +189,7 @@ export default function SpeedrunLeaderboardPage() {
                       setLevelScope("all");
                     }}
                   >
-                    Official & Community
+                    Every
                   </a>
                   <a
                     href="#"
