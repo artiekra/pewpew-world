@@ -12,7 +12,7 @@ def run():
     and saves it to data/data/quests_archive/quests_{month}_{year}.json
     """
     url = "https://pewpew.live/get_daily_quests"
-    data_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data")
+    data_dir = "/storage"
     archive_dir = os.path.join(data_dir, "quests_archive")
     
     now = datetime.now()

@@ -7,7 +7,7 @@ from loguru import logger
 
 def run():
     """Track player data changes from XP and Blitz leaderboard archives."""
-    data_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data")
+    data_dir = "/storage"
 
     output_dir = os.path.join(data_dir, "player_data")
     os.makedirs(output_dir, exist_ok=True)

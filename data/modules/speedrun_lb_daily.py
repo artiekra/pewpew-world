@@ -22,7 +22,7 @@ OFFICIAL_LEVEL_NAMES = {
 
 
 def run():
-    data_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data")
+    data_dir = "/storage"
     score_data_path = os.path.join(data_dir, "github_data", "score_data.csv")
     output_path = os.path.join(data_dir, "speedrun_lb_daily", "leaderboard.csv")
 

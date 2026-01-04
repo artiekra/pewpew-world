@@ -8,7 +8,7 @@ from loguru import logger
 
 
 def run():
-    data_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data")
+    data_dir = "/storage"
     score_data_path = os.path.join(data_dir, "github_data", "score_data.csv")
     levels_path = os.path.join(data_dir, "monthly_lb_monthly", "levels.txt")
     output_path = os.path.join(data_dir, "monthly_lb_daily", "leaderboard.csv")

@@ -13,8 +13,8 @@ def run():
     base_url = "https://raw.githubusercontent.com/pewpewlive/ppl-data/master/"
     files = ["account_data.csv", "level_data.csv", "score_data.csv"]
 
-    data_dir = os.path.dirname(os.path.dirname(__file__))
-    github_data_dir = os.path.join(data_dir, "data", "github_data")
+    data_dir = "/storage"
+    github_data_dir = os.path.join(data_dir, "github_data")
     os.makedirs(github_data_dir, exist_ok=True)
 
     timestamp = datetime.now().timestamp()

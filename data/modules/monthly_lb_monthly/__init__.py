@@ -14,9 +14,7 @@ def run():
     """
     module_dir = os.path.dirname(__file__)
     config_path = os.path.join(module_dir, "config.json")
-    data_dir = os.path.join(
-        os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "data"
-    )
+    data_dir = "/storage"
     level_data_path = os.path.join(data_dir, "github_data", "level_data.csv")
     output_dir = os.path.join(data_dir, "monthly_lb_monthly")
     output_path = os.path.join(output_dir, "levels.txt")
