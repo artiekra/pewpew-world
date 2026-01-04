@@ -143,21 +143,18 @@ def run():
             with open(archive_path, "r") as f:
                 existing_entries = json.load(f)
 
-        existing_entries.append({
-            "timestamp": timestamp,
-            "data": final_leaderboard
-        })
+        existing_entries.append({"timestamp": timestamp, "data": final_leaderboard})
 
         with open(archive_path, "w") as f:
             json.dump(existing_entries, f, indent=2)
 
-        logger.success(f"Processed {len(final_leaderboard)} players")
+        logger.info(f"Processed {len(final_leaderboard)} players")
 
     except Exception as e:
         logger.error(f"Error: {e}")
         raise e
 
-    logger.info("Daily leaderboard processing completed.")
+    logger.success("Daily leaderboard processing completed.")
 
 
 if __name__ == "__main__":

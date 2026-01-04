@@ -8,7 +8,18 @@ services:
       - "8090:8000"
     networks:
       - shared_proxy
+    volumes:
+      - ./prod_data:/app/data
     restart: unless-stopped
+    command: python backend/main.py
+
+  data:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    volumes:
+      - ./prod_data:/app/data
+    command: python data/main.py
 
   frontend:
     build:

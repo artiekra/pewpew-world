@@ -137,8 +137,8 @@ def run():
                         entry["country"] = country
                         entry["has_1p_country"] = True
                     elif not entry["has_1p_country"] and not entry["country"]:
-                         # 2p score: use as fallback only if we have no country yet
-                         entry["country"] = country
+                        # 2p score: use as fallback only if we have no country yet
+                        entry["country"] = country
 
         # Format Output
         final_leaderboard = []
@@ -201,13 +201,13 @@ def run():
         with open(archive_path, "w") as f:
             json.dump(existing_entries, f, indent=2)
 
-        logger.success(f"Processed {len(final_leaderboard)} players")
+        logger.info(f"Processed {len(final_leaderboard)} players")
 
     except Exception as e:
         logger.error(f"Error: {e}")
         raise e
 
-    logger.info("Speedrun daily leaderboard processing completed.")
+    logger.success("Speedrun daily leaderboard processing completed.")
 
 
 if __name__ == "__main__":
