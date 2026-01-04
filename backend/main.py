@@ -7,8 +7,8 @@ app = FastAPI(
     title="PewPew World API",
     description="PewPewLive leaderboards, archives, tools and statistics",
     version="1.0.0",
-    docs_url="/docs",
-    redoc_url="/redoc",
+    docs_url="/api/docs",
+    redoc_url="/api/redoc",
     openapi_url="/openapi.json",
     contact={
         "name": "Artemii Kravchuk",
@@ -28,7 +28,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(v1_router, prefix="/v1")
+app.include_router(v1_router, prefix="/api/v1")
 
 
 if __name__ == "__main__":
