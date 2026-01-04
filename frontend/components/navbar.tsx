@@ -73,9 +73,9 @@ const navItems: NavItem[] = [
     subitems: [
       {
         label: "Blitz Config Generator",
-        href: "https://ppl.artiekra.org/sandbox-config-generator/",
+        href: "/sandbox-config-generator/",
       },
-      { label: "Mesh Editor", href: "https://ppl.artiekra.org/mesh-editor/" },
+      { label: "Mesh Editor", href: "/mesh-editor/" },
     ],
   },
 ];

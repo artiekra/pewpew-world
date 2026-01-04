@@ -1,7 +1,9 @@
 import type { NextConfig } from "next";
+import path from "path";
+import dotenv from "dotenv";
 
-const nextConfig: NextConfig = {
-  /* config options here */
-};
+dotenv.config({ path: path.resolve(process.cwd(), "../.env") });
+
+const nextConfig: NextConfig = {};
 
 export default nextConfig;
