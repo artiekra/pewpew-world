@@ -9,7 +9,7 @@ services:
     networks:
       - shared_proxy
     volumes:
-      - ./storage:/app/storage
+      - ./storage:/storage
     restart: unless-stopped
     command: python backend/main.py
 
@@ -18,7 +18,7 @@ services:
       context: .
       dockerfile: Dockerfile.backend
     volumes:
-      - ./storage:/app/storage
+      - ./storage:/storage
     command: python data/main.py
 
   frontend:
