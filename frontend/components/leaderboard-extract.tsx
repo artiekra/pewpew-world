@@ -27,7 +27,7 @@ interface SpeedrunLeaderboardEntry {
 // Helper to get Tabler flag class
 const getFlagClass = (countryCode: string) => {
   if (!countryCode) return "";
-  return `flag flag-xs flag-country-${countryCode.toLowerCase()}`;
+  return `flag h-3 flag-country-${countryCode.toLowerCase()}`;
 };
 
 interface LeaderboardExtractProps {
@@ -84,11 +84,11 @@ export default function LeaderboardExtract({ type }: LeaderboardExtractProps) {
     type === "monthly"
       ? monthlyData
       : speedrunData.map((entry) => ({
-          player_uuid: entry.player_uuid,
-          player_name: entry.player_name,
-          country: entry.country,
-          score: entry.display_score,
-        }));
+        player_uuid: entry.player_uuid,
+        player_name: entry.player_name,
+        country: entry.country,
+        score: entry.display_score,
+      }));
 
   return (
     <div className="card">

@@ -26,7 +26,7 @@ interface SpeedrunLeaderboardResponse {
 // Helper to get Tabler flag class
 const getFlagClass = (countryCode: string) => {
   if (!countryCode) return "";
-  return `flag flag-xs flag-country-${countryCode.toLowerCase()}`;
+  return `flag h-3 flag-country-${countryCode.toLowerCase()}`;
 };
 
 const scoreCalculation = (
@@ -215,9 +215,8 @@ export default function SpeedrunLeaderboardPage() {
               <div className="dropdown">
                 <a
                   href="#"
-                  className={`btn dropdown-toggle ${
-                    levelScope === "community" ? "disabled" : ""
-                  }`}
+                  className={`btn dropdown-toggle ${levelScope === "community" ? "disabled" : ""
+                    }`}
                   data-bs-toggle="dropdown"
                 >
                   {playerMode === "all"
