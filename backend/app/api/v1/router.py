@@ -223,13 +223,13 @@ async def get_monthly_leaderboard():
 
     player_name_map = {}
     if account_data_path.exists():
-        with open(account_data_path, "r") as f:
+        with open(account_data_path, "r", encoding="utf-8") as f:
             reader = csv.DictReader(f)
             for row in reader:
                 player_name_map[row["account_id"]] = row["username"]
 
     if leaderboard_path.exists():
-        with open(leaderboard_path, "r") as f:
+        with open(leaderboard_path, "r", encoding="utf-8") as f:
             reader = csv.DictReader(f)
             for row in reader:
                 player_uuid = row["player_uuid"]
@@ -245,12 +245,12 @@ async def get_monthly_leaderboard():
                 )
 
     if levels_path.exists():
-        with open(levels_path, "r") as f:
+        with open(levels_path, "r", encoding="utf-8") as f:
             level_uuids = [line.strip() for line in f if line.strip()]
 
         level_name_map = {}
         if level_data_path.exists():
-            with open(level_data_path, "r") as f:
+            with open(level_data_path, "r", encoding="utf-8") as f:
                 reader = csv.DictReader(f)
                 for row in reader:
                     level_name_map[row["level_uuid"]] = row["name"]
@@ -261,7 +261,7 @@ async def get_monthly_leaderboard():
         ]
 
     if metadata_path.exists():
-        with open(metadata_path, "r") as f:
+        with open(metadata_path, "r", encoding="utf-8") as f:
             metadata = json.load(f)
             timestamp = metadata.get("timestamp", 0.0)
 
@@ -289,13 +289,13 @@ async def get_speedrun_leaderboard():
 
     player_name_map = {}
     if account_data_path.exists():
-        with open(account_data_path, "r") as f:
+        with open(account_data_path, "r", encoding="utf-8") as f:
             reader = csv.DictReader(f)
             for row in reader:
                 player_name_map[row["account_id"]] = row["username"]
 
     if leaderboard_path.exists():
-        with open(leaderboard_path, "r") as f:
+        with open(leaderboard_path, "r", encoding="utf-8") as f:
             reader = csv.DictReader(f)
             for row in reader:
                 player_uuid = row["player_uuid"]
@@ -312,7 +312,7 @@ async def get_speedrun_leaderboard():
                 )
 
     if metadata_path.exists():
-        with open(metadata_path, "r") as f:
+        with open(metadata_path, "r", encoding="utf-8") as f:
             metadata = json.load(f)
             timestamp = metadata.get("timestamp", 0.0)
 
@@ -341,7 +341,7 @@ async def get_archived_monthly_leaderboard(year: int, month: int):
             detail=f"No monthly leaderboard archive found for {month}/{year}",
         )
 
-    with open(archive_path, "r") as f:
+    with open(archive_path, "r", encoding="utf-8") as f:
         archive = json.load(f)
 
     if not archive:
@@ -351,7 +351,7 @@ async def get_archived_monthly_leaderboard(year: int, month: int):
 
     player_name_map = {}
     if account_data_path.exists():
-        with open(account_data_path, "r") as f:
+        with open(account_data_path, "r", encoding="utf-8") as f:
             reader = csv.DictReader(f)
             for row in reader:
                 player_name_map[row["account_id"]] = row["username"]
@@ -374,14 +374,14 @@ async def get_archived_monthly_leaderboard(year: int, month: int):
     timestamp = latest_entry.get("timestamp", 0.0)
 
     if levels_archive_path.exists():
-        with open(levels_archive_path, "r") as f:
+        with open(levels_archive_path, "r", encoding="utf-8") as f:
             levels_archive = json.load(f)
             closest_levels_entry = find_closest_timestamp(levels_archive, timestamp)
             level_uuids = closest_levels_entry.get("levels", [])
 
         level_name_map = {}
         if level_data_path.exists():
-            with open(level_data_path, "r") as f:
+            with open(level_data_path, "r", encoding="utf-8") as f:
                 reader = csv.DictReader(f)
                 for row in reader:
                     level_name_map[row["level_uuid"]] = row["name"]
@@ -407,7 +407,7 @@ async def get_monthly_leaderboard_levels(year: int, month: int):
     base_path = Path(STORAGE_PATH)
     archive_path = base_path / "monthly_lb_monthly/levels_archive.json"
 
-    with open(archive_path, "r") as f:
+    with open(archive_path, "r", encoding="utf-8") as f:
         archive = json.load(f)
 
     month_start = datetime(year, month, 1).timestamp()
@@ -456,7 +456,7 @@ async def get_archived_xp_leaderboard(timestamp: float):
             status_code=404, detail=f"No XP archive found for {dt.month}/{dt.year}"
         )
 
-    with open(archive_path, "r") as f:
+    with open(archive_path, "r", encoding="utf-8") as f:
         archive = json.load(f)
 
     closest_entry = find_closest_timestamp(archive, timestamp)
@@ -482,7 +482,7 @@ async def get_xp_leaderboard_uptime(year: int, month: int):
             status_code=404, detail=f"No XP archive found for {month}/{year}"
         )
 
-    with open(archive_path, "r") as f:
+    with open(archive_path, "r", encoding="utf-8") as f:
         archive = json.load(f)
 
     next_month = (
@@ -552,7 +552,7 @@ async def get_archived_blitz_leaderboard(timestamp: float):
             status_code=404, detail=f"No blitz archive found for {dt.month}/{dt.year}"
         )
 
-    with open(archive_path, "r") as f:
+    with open(archive_path, "r", encoding="utf-8") as f:
         archive = json.load(f)
 
     closest_entry = find_closest_timestamp(archive, timestamp)
@@ -578,7 +578,7 @@ async def get_blitz_leaderboard_uptime(year: int, month: int):
             status_code=404, detail=f"No blitz archive found for {month}/{year}"
         )
 
-    with open(archive_path, "r") as f:
+    with open(archive_path, "r", encoding="utf-8") as f:
         archive = json.load(f)
 
     next_month = (
@@ -645,7 +645,7 @@ async def get_archived_quests(year: int, month: int, day: int):
             status_code=404, detail=f"No quests archive found for {month}/{year}"
         )
 
-    with open(archive_path, "r") as f:
+    with open(archive_path, "r", encoding="utf-8") as f:
         archive = json.load(f)
 
     day_start = datetime(year, month, day).timestamp()
@@ -685,7 +685,7 @@ async def get_quests_uptime(year: int, month: int):
             status_code=404, detail=f"No quests archive found for {month}/{year}"
         )
 
-    with open(archive_path, "r") as f:
+    with open(archive_path, "r", encoding="utf-8") as f:
         archive = json.load(f)
 
     next_month = (
@@ -737,7 +737,7 @@ async def get_player_xp_history(uuid: str):
     if not player_data_path.exists():
         return PlayerXPHistoryResponse(player_uuid=uuid, history=[])
 
-    with open(player_data_path, "r") as f:
+    with open(player_data_path, "r", encoding="utf-8") as f:
         player_data = json.load(f)
 
     player = player_data.get(uuid)
@@ -767,7 +767,7 @@ async def get_player_blitz_history(uuid: str):
     if not player_data_path.exists():
         return PlayerBlitzHistoryResponse(player_uuid=uuid, history=[])
 
-    with open(player_data_path, "r") as f:
+    with open(player_data_path, "r", encoding="utf-8") as f:
         player_data = json.load(f)
 
     player = player_data.get(uuid)
@@ -805,7 +805,7 @@ async def get_player_leaderboard_placements(uuid: str):
     metadata_path = base_path / "github_data/metadata.json"
 
     if leaderboard_path.exists():
-        with open(leaderboard_path, "r") as f:
+        with open(leaderboard_path, "r", encoding="utf-8") as f:
             reader = csv.DictReader(f)
             for index, row in enumerate(reader):
                 if row["player_uuid"] == uuid:
@@ -815,7 +815,7 @@ async def get_player_leaderboard_placements(uuid: str):
                     break
 
     if metadata_path.exists():
-        with open(metadata_path, "r") as f:
+        with open(metadata_path, "r", encoding="utf-8") as f:
             metadata = json.load(f)
             monthly_placement.timestamp = metadata.get("timestamp", 0.0)
 
@@ -824,7 +824,7 @@ async def get_player_leaderboard_placements(uuid: str):
         xp_files = sorted(xp_archive_dir.glob("xp_lb_*.json"))
         if xp_files:
             latest_xp_file = xp_files[-1]
-            with open(latest_xp_file, "r") as f:
+            with open(latest_xp_file, "r", encoding="utf-8") as f:
                 xp_archive = json.load(f)
             latest_xp_entry = max(xp_archive, key=lambda x: x.get("timestamp", 0))
             xp_placement.timestamp = latest_xp_entry.get("timestamp", 0.0)
@@ -839,7 +839,7 @@ async def get_player_leaderboard_placements(uuid: str):
         blitz_files = sorted(blitz_archive_dir.glob("blitz_lb_*.json"))
         if blitz_files:
             latest_blitz_file = blitz_files[-1]
-            with open(latest_blitz_file, "r") as f:
+            with open(latest_blitz_file, "r", encoding="utf-8") as f:
                 blitz_archive = json.load(f)
             latest_blitz_entry = max(blitz_archive, key=lambda x: x.get("timestamp", 0))
             blitz_placement.timestamp = latest_blitz_entry.get("timestamp", 0.0)
@@ -871,7 +871,7 @@ async def get_username_change_history(uuid: str):
     if not player_data_path.exists():
         return UsernameChangeHistoryResponse(player_uuid=uuid, changes=[])
 
-    with open(player_data_path, "r") as f:
+    with open(player_data_path, "r", encoding="utf-8") as f:
         player_data = json.load(f)
 
     player = player_data.get(uuid)
@@ -902,7 +902,7 @@ async def compare_scores_by_level(
 
     level_versions = {}
 
-    with open(score_data_path, "r") as f:
+    with open(score_data_path, "r", encoding="utf-8") as f:
         reader = csv.DictReader(f)
         for row in reader:
             level_uuid = row["level_uuid"]
@@ -916,7 +916,7 @@ async def compare_scores_by_level(
 
     player_scores = {}
 
-    with open(score_data_path, "r") as f:
+    with open(score_data_path, "r", encoding="utf-8") as f:
         reader = csv.DictReader(f)
         for row in reader:
             player_uuid = row["account_ids"]
@@ -967,7 +967,7 @@ async def compare_scores_by_level(
     level_data_path = base_path / "github_data/level_data.csv"
     level_name_map = {}
     if level_data_path.exists():
-        with open(level_data_path, "r") as f:
+        with open(level_data_path, "r", encoding="utf-8") as f:
             reader = csv.DictReader(f)
             for row in reader:
                 level_name_map[row["level_uuid"]] = row["name"]
