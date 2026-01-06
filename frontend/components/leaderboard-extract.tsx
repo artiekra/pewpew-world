@@ -24,14 +24,10 @@ interface SpeedrunLeaderboardEntry {
   score_2p_community: number;
 }
 
-// Helper to convert ISO 2-letter code to Emoji Flag
-const getFlagEmoji = (countryCode: string) => {
+// Helper to get Tabler flag class
+const getFlagClass = (countryCode: string) => {
   if (!countryCode) return "";
-  const codePoints = countryCode
-    .toUpperCase()
-    .split("")
-    .map((char) => 127397 + char.charCodeAt(0));
-  return String.fromCodePoint(...codePoints);
+  return `flag flag-xs flag-country-${countryCode.toLowerCase()}`;
 };
 
 interface LeaderboardExtractProps {
@@ -137,13 +133,14 @@ export default function LeaderboardExtract({ type }: LeaderboardExtractProps) {
                 >
                   <div className="d-flex align-items-center">
                     <span className="badge me-2">{index + 1}</span>
-                    <span
-                      className="me-1 user-select-none"
-                      title={entry.country}
-                      style={{ fontSize: "1em" }}
-                    >
-                      {getFlagEmoji(entry.country)}
-                    </span>
+                    {entry.country && (
+                      <span
+                        className={`me-2 user-select-none ${getFlagClass(
+                          entry.country,
+                        )}`}
+                        title={entry.country}
+                      ></span>
+                    )}
                     <Link
                       href={`/player/${entry.player_uuid}`}
                       className="player-link text-reset"

@@ -23,14 +23,10 @@ interface SpeedrunLeaderboardResponse {
   leaderboard: SpeedrunLeaderboardEntry[];
 }
 
-// Helper to convert ISO 2-letter code to Emoji Flag
-const getFlagEmoji = (countryCode: string) => {
+// Helper to get Tabler flag class
+const getFlagClass = (countryCode: string) => {
   if (!countryCode) return "";
-  const codePoints = countryCode
-    .toUpperCase()
-    .split("")
-    .map((char) => 127397 + char.charCodeAt(0));
-  return String.fromCodePoint(...codePoints);
+  return `flag flag-xs flag-country-${countryCode.toLowerCase()}`;
 };
 
 const scoreCalculation = (
@@ -119,19 +115,19 @@ export default function SpeedrunLeaderboardPage() {
         header: "Player",
         cell: ({ row, getValue }) => {
           const countryCode = row.original.country;
-          const flag = getFlagEmoji(countryCode);
           const uuid = row.original.player_uuid;
 
           return (
             <div className="d-flex align-items-center">
-              <div className="text-truncate" style={{ maxWidth: "160px" }}>
-                <span
-                  className="me-2 user-select-none"
-                  title={countryCode}
-                  style={{ fontSize: "1em" }}
-                >
-                  {flag}
-                </span>
+              <div className="text-truncate d-flex align-items-center" style={{ maxWidth: "160px" }}>
+                {countryCode && (
+                  <span
+                    className={`me-2 user-select-none ${getFlagClass(
+                      countryCode,
+                    )}`}
+                    title={countryCode}
+                  ></span>
+                )}
                 <Link
                   href={`/player/${uuid}`}
                   className="player-link text-reset"

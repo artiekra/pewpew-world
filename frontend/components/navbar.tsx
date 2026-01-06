@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   IconHome,
@@ -80,6 +81,11 @@ const navItems: NavItem[] = [
 
 export default function Navbar() {
   const { theme, toggleTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   return (
     <header className="navbar navbar-expand-md navbar-light d-print-none">
@@ -116,7 +122,15 @@ export default function Navbar() {
           onClick={toggleTheme}
           aria-label="Toggle theme"
         >
-          {theme === "dark" ? <IconSun size={24} /> : <IconMoon size={24} />}
+          {mounted ? (
+            theme === "dark" ? (
+              <IconSun size={24} />
+            ) : (
+              <IconMoon size={24} />
+            )
+          ) : (
+            <div style={{ width: 24, height: 24 }} />
+          )}
         </button>
 
         {/* 4. Menu Items (Collapsible, Centers on Desktop) */}

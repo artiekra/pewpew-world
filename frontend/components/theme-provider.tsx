@@ -12,20 +12,16 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setTheme] = useState<Theme>(() => {
-    if (typeof window === "undefined") return "dark";
-    
+  const [theme, setTheme] = useState<Theme>("dark");
+
+  useEffect(() => {
     const savedTheme = localStorage.getItem("theme") as Theme | null;
     if (savedTheme && (savedTheme === "dark" || savedTheme === "light")) {
-      return savedTheme;
+      setTheme(savedTheme);
+    } else if (window.matchMedia("(prefers-color-scheme: light)").matches) {
+      setTheme("light");
     }
-    
-    if (window.matchMedia("(prefers-color-scheme: light)").matches) {
-      return "light";
-    }
-    
-    return "dark";
-  });
+  }, []);
 
   useEffect(() => {
     document.documentElement.setAttribute("data-bs-theme", theme);

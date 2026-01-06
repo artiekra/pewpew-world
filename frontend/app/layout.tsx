@@ -1,4 +1,5 @@
 import "@tabler/core/dist/css/tabler.min.css";
+import "@tabler/core/dist/css/tabler-flags.min.css";
 import "@tabler/core/dist/css/tabler-themes.min.css";
 import "./globals.css";
 import type { Metadata } from "next";
