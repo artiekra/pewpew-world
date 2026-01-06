@@ -21,6 +21,12 @@ interface UsernameChangeHistoryResponse {
   changes: UsernameChange[];
 }
 
+interface PlayerInfo {
+  player_uuid: string;
+  username: string;
+  country: string | null;
+}
+
 interface LeaderboardPlacement {
   timestamp: number;
   placement: number | null;
@@ -88,6 +94,7 @@ export default function PlayerProfilePage() {
   const params = useParams();
   const uuid = params?.uuid as string;
   const [history, setHistory] = useState<UsernameChange[] | null>(null);
+  const [playerInfo, setPlayerInfo] = useState<PlayerInfo | null>(null);
   const [placements, setPlacements] =
     useState<PlayerLeaderboardPlacementsResponse | null>(null);
   const [xpHistory, setXpHistory] = useState<XPHistoryEntry[] | null>(null);
@@ -101,6 +108,10 @@ export default function PlayerProfilePage() {
 
     api.get(`/v1/player/${uuid}/get_username_change_history`).then((res) => {
       setHistory(res.data.changes.reverse());
+    });
+
+    api.get(`/v1/player/${uuid}/get_info`).then((res) => {
+      setPlayerInfo(res.data);
     });
 
     api.get(`/v1/player/${uuid}/get_leaderboard_placements`).then((res) => {
@@ -239,7 +250,7 @@ export default function PlayerProfilePage() {
       : history.slice(0, 5)
     : [];
   const latestUsername =
-    history && history.length > 0 ? history[0].new_name : null;
+    playerInfo?.username || (history && history.length > 0 ? history[0].new_name : null);
 
   return (
     <div className="container-xl p-4">

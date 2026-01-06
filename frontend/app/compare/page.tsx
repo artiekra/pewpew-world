@@ -140,19 +140,20 @@ function CompareContent() {
       try {
         // Fetch basic data for each player
         const playersPromises = playerUuids.map(async (uuid) => {
-          const [historyRes, placementsRes, xpRes, blitzRes] =
+          const [historyRes, placementsRes, xpRes, blitzRes, infoRes] =
             await Promise.all([
               api.get(`/v1/player/${uuid}/get_username_change_history`),
               api.get(`/v1/player/${uuid}/get_leaderboard_placements`),
               api.get(`/v1/player/${uuid}/get_xp_history`),
               api.get(`/v1/player/${uuid}/get_blitz_history`),
+              api.get(`/v1/player/${uuid}/get_info`).catch(() => ({ data: { username: "Unknown" } })),
             ]);
 
           const history = historyRes.data.changes;
           const name =
-            history.length > 0
+            infoRes.data.username || (history.length > 0
               ? history[history.length - 1].new_name
-              : "Unknown";
+              : "Unknown");
 
           return {
             uuid,
