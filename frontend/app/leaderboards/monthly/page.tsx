@@ -29,14 +29,10 @@ interface MonthlyResponse {
   leaderboard: LeaderboardEntry[];
 }
 
-// Helper to convert ISO 2-letter code to Emoji Flag
-const getFlagEmoji = (countryCode: string) => {
+// Helper to get Tabler flag class
+const getFlagClass = (countryCode: string) => {
   if (!countryCode) return "";
-  const codePoints = countryCode
-    .toUpperCase()
-    .split("")
-    .map((char) => 127397 + char.charCodeAt(0));
-  return String.fromCodePoint(...codePoints);
+  return `flag h-3 flag-country-${countryCode.toLowerCase()}`;
 };
 
 const columns: ColumnDef<LeaderboardEntry>[] = [
@@ -45,18 +41,18 @@ const columns: ColumnDef<LeaderboardEntry>[] = [
     header: "Player",
     cell: ({ row, getValue }) => {
       const countryCode = row.original.country;
-      const flag = getFlagEmoji(countryCode);
       const uuid = row.original.player_uuid;
 
       return (
         <div className="d-flex align-items-center">
-          <span
-            className="me-2 user-select-none"
-            title={countryCode}
-            style={{ fontSize: "1em" }}
-          >
-            {flag}
-          </span>
+          {countryCode && (
+            <span
+              className={`me-2 user-select-none ${getFlagClass(
+                countryCode,
+              )}`}
+              title={countryCode}
+            ></span>
+          )}
           {/* <span className="badge bg-blue-lt me-2">{countryCode}</span> */}
           <Link href={`/player/${uuid}`} className="player-link text-reset">
             <ColorizedText text={getValue() as string} />
