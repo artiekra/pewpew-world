@@ -161,6 +161,11 @@ class UsernameChangeHistoryResponse(BaseModel):
     changes: List[UsernameChange]
 
 
+class GetUsernameResponse(BaseModel):
+    player_uuid: str
+    username: str
+
+
 class PlayerLevelScore(BaseModel):
     player_uuid: str
     score: int
@@ -885,6 +890,26 @@ async def get_username_change_history(uuid: str):
     ]
 
     return UsernameChangeHistoryResponse(player_uuid=uuid, changes=changes)
+
+
+@router.get(
+    "/player/{uuid}/get_username",
+    summary="Get player username",
+    description="Retrieves the username for a specific player UUID from account data",
+    tags=["player"],
+    response_model=GetUsernameResponse,
+)
+async def get_player_username(uuid: str):
+    base_path = Path(STORAGE_PATH)
+    account_data_path = base_path / "github_data/account_data.csv"
+
+    with open(account_data_path, "r", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            if row["account_id"] == uuid:
+                return GetUsernameResponse(player_uuid=uuid, username=row["username"])
+
+    raise HTTPException(status_code=404, detail=f"Player {uuid} not found")
 
 
 @router.get(

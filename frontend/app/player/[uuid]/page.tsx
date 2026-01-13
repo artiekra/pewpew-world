@@ -74,6 +74,11 @@ interface ComparisonResponse {
   levels: LevelScoresGroup[];
 }
 
+interface GetUsernameResponse {
+  player_uuid: string;
+  username: string;
+}
+
 interface FlattenedScore {
   level_uuid: string;
   level_name: string;
@@ -95,12 +100,17 @@ export default function PlayerProfilePage() {
     null,
   );
   const [scores, setScores] = useState<FlattenedScore[] | null>(null);
+  const [username, setUsername] = useState<string | null>(null);
 
   useEffect(() => {
     if (!uuid) return;
 
     api.get(`/v1/player/${uuid}/get_username_change_history`).then((res) => {
       setHistory(res.data.changes.reverse());
+    });
+
+    api.get(`/v1/player/${uuid}/get_username`).then((res) => {
+      setUsername(res.data.username);
     });
 
     api.get(`/v1/player/${uuid}/get_leaderboard_placements`).then((res) => {
@@ -238,16 +248,14 @@ export default function PlayerProfilePage() {
       ? history
       : history.slice(0, 5)
     : [];
-  const latestUsername =
-    history && history.length > 0 ? history[0].new_name : null;
 
   return (
     <div className="container-xl p-4">
       <div className="d-flex justify-content-between align-items-center">
         <div>
           <h2 className="page-title">
-            {latestUsername ? (
-              <ColorizedText text={latestUsername} />
+            {username ? (
+              <ColorizedText text={username} />
             ) : (
               "Player Profile"
             )}
