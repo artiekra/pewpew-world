@@ -12,7 +12,7 @@ export default function Footer() {
     >
       <div className="container-xl d-flex flex-column flex-md-row justify-content-between align-items-center">
         <div className="text-muted" style={{ fontSize: "0.9rem" }}>
-          PewPew World -{" "}
+          PewPew World v1.0.0 -{" "}
           <a
             href="https://github.com/artiekra/pewpew-world"
             target="_blank"

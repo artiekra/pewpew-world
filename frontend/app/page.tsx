@@ -64,6 +64,39 @@ export default function Home() {
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
+              className="icon icon-tabler icons-tabler-outline icon-tabler-bell-ringing"
+            >
+              <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+              <path d="M10 5a2 2 0 0 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3h-16a4 4 0 0 0 2 -3v-3a7 7 0 0 1 4 -6" />
+              <path d="M9 17v1a3 3 0 0 0 6 0v-1" />
+              <path d="M21 6.727a11.05 11.05 0 0 0 -2.794 -3.727" />
+              <path d="M3 6.727a11.05 11.05 0 0 1 2.792 -3.727" />
+            </svg>
+          </div>
+          <div className="card timeline-event-card">
+            <div className="card-body">
+              <div className="text-secondary float-end">January 13th, 2025</div>
+              <h4>PewPew World v1.0</h4>
+              <p className="text-secondary">
+                Release the first verison of the website featuring: monthly and
+                speedrun leaderboards; archives of XP, blitz leaderboards, and
+                quests; player comparison; and global player search!
+              </p>
+            </div>
+          </div>
+        </li>
+        <li className="timeline-event">
+          <div className="timeline-event-icon bg-x-lt">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
               className="icon icon-tabler icons-tabler-outline icon-tabler-settings"
             >
               <path stroke="none" d="M0 0h24v24H0z" fill="none" />
