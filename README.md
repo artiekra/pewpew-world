@@ -23,4 +23,4 @@ pip install -r requirements.txt
 
 - Start collecting data with `py data/main.py`
 - Start API backend using the data with `py backend/main.py` (by default starts on `0.0.0.0:8000`)
-- Start frontend by going into next.js project folder: `cd frontend`, and `npm run dev`
+- Start frontend by going into next.js project folder: `cd frontend`, and `npm run dev` (if first time, also `npm install`)

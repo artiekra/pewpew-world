@@ -30,5 +30,13 @@
   {
     "module": "modules.player_data",
     "cron": "15 * * * *"
+  },
+  {
+    "module": "modules.total_xp_lb_archive_weekly",
+    "cron": "30 3 * * 0"
+  },
+  {
+    "module": "modules.total_xp_lb_archive_daily",
+    "cron": "30 4 * * *"
   }
 ]
