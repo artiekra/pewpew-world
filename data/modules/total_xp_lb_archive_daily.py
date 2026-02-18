@@ -11,27 +11,26 @@ load_dotenv()
 
 
 def get_top_20_from_weekly() -> list:
-    """
-    Scans the weekly archive folder for the latest file,
-    reads the most recent data entry, sorts by Total XP,
-    and returns the top 20 players.
-    """
-    data_dir = os.getenv("STORAGE_PATH", "/storage")
-    weekly_dir = os.path.join(data_dir, "total_xp_lb_archive_weekly")
+    """Scans the weekly archive for the latest file and returns the top 20 players sorted by Total XP."""
+    data_dir: str = os.getenv("STORAGE_PATH", "/storage")
+    weekly_dir: str = os.path.join(data_dir, "total_xp_lb_archive_weekly")
 
     if not os.path.exists(weekly_dir):
         logger.error(f"Weekly archive directory not found at {weekly_dir}")
         return []
 
-    # 1. Find the latest file based on MM_YYYY filename
-    files = []
+    files: list = []
+
+    # parse filenames to find the latest month and year
     for f in os.listdir(weekly_dir):
         if f.startswith("total_xp_lb_") and f.endswith(".json"):
             try:
-                # Filename format: total_xp_lb_MM_YYYY.json
-                parts = f.replace("total_xp_lb_", "").replace(".json", "").split("_")
+                parts: list = (
+                    f.replace("total_xp_lb_", "").replace(".json", "").split("_")
+                )
                 if len(parts) == 2:
-                    month, year = int(parts[0]), int(parts[1])
+                    month: int = int(parts[0])
+                    year: int = int(parts[1])
                     files.append(((year, month), os.path.join(weekly_dir, f)))
             except ValueError:
                 continue
@@ -40,23 +39,23 @@ def get_top_20_from_weekly() -> list:
         logger.error("No weekly archive files found.")
         return []
 
-    # Sort by (Year, Month) descending to get the newest file
     files.sort(key=lambda x: x[0], reverse=True)
-    latest_filepath = files[0][1]
+    latest_filepath: str = files[0][1]
     logger.info(f"Loading reference data from: {latest_filepath}")
 
-    # 2. Read file and extract top 20
     try:
         with open(latest_filepath, "r") as f:
-            data = json.load(f)
+            data: list = json.load(f)
 
         if not data:
             logger.warning("Weekly file is empty.")
             return []
 
-        # Get the last entry (the most recent weekly run)
-        latest_entry = data[-1]
-        players = latest_entry.get("data", [])
+        latest_entry: dict = data[-1]
+        players: list = latest_entry.get("data", [])
+
+        # sort players by their total xp descending before taking the top 20
+        players.sort(key=lambda p: p.get("total_xp", 0), reverse=True)
 
         return players[:20]
 
