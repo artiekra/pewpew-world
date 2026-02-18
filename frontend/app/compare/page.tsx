@@ -359,8 +359,9 @@ function CompareContent() {
       "#74b816", // Lime
       "#e83e8c", // Pink
       "#343a40", // Dark Gray
-      "#2fb344", // Green
+      "#0f9334", // Green
       "#1098ad", // Teal
+      "#848a80", // Light Gray
     ];
 
     const commonOptions: any = {
